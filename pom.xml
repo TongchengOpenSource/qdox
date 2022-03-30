@@ -7,8 +7,8 @@
     <version>9</version>
   </parent>
 
-  <name>QDox</name>
-  <groupId>com.thoughtworks.qdox</groupId>
+  <name>smart-doc-qdox</name>
+  <groupId>com.github.shalousun</groupId>
   <artifactId>qdox</artifactId>
   <version>2.0.2-SNAPSHOT</version>
 
@@ -179,11 +179,11 @@
             <templateFile>${basedir}/src/site/templates/site.vm</templateFile>
           </configuration>
         </plugin>
-        <plugin>
+        <!--<plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-release-plugin</artifactId>
           <version>2.5.1</version>
-        </plugin>
+        </plugin>-->
       </plugins>
     </pluginManagement>
     <plugins>
@@ -439,7 +439,7 @@
   </profiles>
 
   <!-- Reports -->
-  <reporting>
+  <!--<reporting>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -493,6 +493,6 @@
         </reportSets>
       </plugin>
     </plugins>
-  </reporting>
+  </reporting>-->
 
 </project>

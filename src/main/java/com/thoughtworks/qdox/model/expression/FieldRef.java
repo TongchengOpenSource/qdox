@@ -1,6 +1,12 @@
 package com.thoughtworks.qdox.model.expression;
 
+import com.thoughtworks.qdox.library.ClassLibrary;
+import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaField;
+import com.thoughtworks.qdox.type.TypeResolver;
+
 import java.util.List;
+import java.util.StringTokenizer;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -21,12 +27,6 @@ import java.util.List;
  * under the License.
  */
 
-import java.util.StringTokenizer;
-
-import com.thoughtworks.qdox.library.ClassLibrary;
-import com.thoughtworks.qdox.model.JavaClass;
-import com.thoughtworks.qdox.model.JavaField;
-
 public class FieldRef
     implements AnnotationValue
 {
@@ -41,6 +41,13 @@ public class FieldRef
     private JavaField field;
 
     private int fieldIndex = -1;
+
+    /**
+     * the <code>TypeResolver</code> object of the declaring class,
+     * used to resolve of value of static final values of other classes
+     * which is part of the final url of <code>RequestMapping</code>
+     */
+    private TypeResolver typeResolver;
 
     /**
      * @param name the field name, not <code>null</code>
@@ -59,6 +66,16 @@ public class FieldRef
         }
 
         this.parts[length] = name.length();
+    }
+
+    /**
+     * create with the name and the <code>TypeResolver</code> object of the declaring class
+     * @param name the field name of the declaring class or any other class, not <code>null</code>
+     * @param typeResolver
+     */
+    public FieldRef(String name, TypeResolver typeResolver) {
+        this(name);
+        this.typeResolver = typeResolver;
     }
 
     public String getName()
@@ -160,14 +177,11 @@ public class FieldRef
 
     public JavaField getField()
     {
-        if ( fieldIndex < 0 )
+        JavaClass declaringClass = getDeclaringClass();
+        if ( fieldIndex < 0 && declaringClass != null)
         {
-            JavaClass declaringClass = getDeclaringClass();
-            if ( declaringClass != null )
-            {
-                field = resolveField( declaringClass, 0, parts.length - 1 );
-                fieldIndex = 0;
-            }
+            field = resolveField( declaringClass, 0, parts.length - 1 );
+            fieldIndex = 0;
 
             if ( field == null )
             {
@@ -216,6 +230,23 @@ public class FieldRef
                 }
             }
         }
+
+        if (field == null) {
+            // the field may in any other class, try to resolve it
+            for (int i = 0; i < parts.length - 1; ++i) {
+                String className = getNamePrefix(i);
+                JavaClass javaClass = typeResolver.resolveJavaClass(className);
+                if (javaClass != null) {
+                    this.fieldIndex++;
+                    field = resolveField(javaClass, i + 1, parts.length - 1);
+                    if (field != null) {
+                        break;
+                    }
+                }
+            }
+
+        }
+
         return field;
     }
 

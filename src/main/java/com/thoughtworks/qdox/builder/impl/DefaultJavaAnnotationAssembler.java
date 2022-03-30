@@ -19,96 +19,20 @@ package com.thoughtworks.qdox.builder.impl;
  * under the License.
  */
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import com.thoughtworks.qdox.builder.TypeAssembler;
 import com.thoughtworks.qdox.library.ClassLibrary;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaType;
-import com.thoughtworks.qdox.model.expression.Add;
-import com.thoughtworks.qdox.model.expression.And;
-import com.thoughtworks.qdox.model.expression.AnnotationValue;
-import com.thoughtworks.qdox.model.expression.AnnotationValueList;
-import com.thoughtworks.qdox.model.expression.Assignment;
-import com.thoughtworks.qdox.model.expression.Cast;
-import com.thoughtworks.qdox.model.expression.Constant;
-import com.thoughtworks.qdox.model.expression.Divide;
-import com.thoughtworks.qdox.model.expression.Equals;
-import com.thoughtworks.qdox.model.expression.ExclusiveOr;
-import com.thoughtworks.qdox.model.expression.Expression;
-import com.thoughtworks.qdox.model.expression.FieldRef;
-import com.thoughtworks.qdox.model.expression.GreaterEquals;
-import com.thoughtworks.qdox.model.expression.GreaterThan;
-import com.thoughtworks.qdox.model.expression.LessEquals;
-import com.thoughtworks.qdox.model.expression.LessThan;
-import com.thoughtworks.qdox.model.expression.LogicalAnd;
-import com.thoughtworks.qdox.model.expression.LogicalNot;
-import com.thoughtworks.qdox.model.expression.LogicalOr;
-import com.thoughtworks.qdox.model.expression.MinusSign;
-import com.thoughtworks.qdox.model.expression.Multiply;
-import com.thoughtworks.qdox.model.expression.Not;
-import com.thoughtworks.qdox.model.expression.NotEquals;
-import com.thoughtworks.qdox.model.expression.Or;
-import com.thoughtworks.qdox.model.expression.ParenExpression;
-import com.thoughtworks.qdox.model.expression.PlusSign;
-import com.thoughtworks.qdox.model.expression.PostDecrement;
-import com.thoughtworks.qdox.model.expression.PostIncrement;
-import com.thoughtworks.qdox.model.expression.PreDecrement;
-import com.thoughtworks.qdox.model.expression.PreIncrement;
-import com.thoughtworks.qdox.model.expression.Query;
-import com.thoughtworks.qdox.model.expression.Remainder;
-import com.thoughtworks.qdox.model.expression.ShiftLeft;
-import com.thoughtworks.qdox.model.expression.ShiftRight;
-import com.thoughtworks.qdox.model.expression.Subtract;
-import com.thoughtworks.qdox.model.expression.TypeRef;
-import com.thoughtworks.qdox.model.expression.UnsignedShiftRight;
+import com.thoughtworks.qdox.model.expression.*;
 import com.thoughtworks.qdox.model.impl.DefaultJavaAnnotation;
-import com.thoughtworks.qdox.parser.expression.AddDef;
-import com.thoughtworks.qdox.parser.expression.AndDef;
-import com.thoughtworks.qdox.parser.expression.AssignmentDef;
-import com.thoughtworks.qdox.parser.expression.CastDef;
-import com.thoughtworks.qdox.parser.expression.ConstantDef;
-import com.thoughtworks.qdox.parser.expression.CreatorDef;
-import com.thoughtworks.qdox.parser.expression.DivideDef;
-import com.thoughtworks.qdox.parser.expression.ElemValueDef;
-import com.thoughtworks.qdox.parser.expression.ElemValueListDef;
-import com.thoughtworks.qdox.parser.expression.ElemValueTransformer;
-import com.thoughtworks.qdox.parser.expression.EqualsDef;
-import com.thoughtworks.qdox.parser.expression.ExclusiveOrDef;
-import com.thoughtworks.qdox.parser.expression.FieldRefDef;
-import com.thoughtworks.qdox.parser.expression.GreaterEqualsDef;
-import com.thoughtworks.qdox.parser.expression.GreaterThanDef;
-import com.thoughtworks.qdox.parser.expression.LambdaDef;
-import com.thoughtworks.qdox.parser.expression.LessEqualsDef;
-import com.thoughtworks.qdox.parser.expression.LessThanDef;
-import com.thoughtworks.qdox.parser.expression.LogicalAndDef;
-import com.thoughtworks.qdox.parser.expression.LogicalNotDef;
-import com.thoughtworks.qdox.parser.expression.LogicalOrDef;
-import com.thoughtworks.qdox.parser.expression.MethodInvocationDef;
-import com.thoughtworks.qdox.parser.expression.MethodReferenceDef;
-import com.thoughtworks.qdox.parser.expression.MinusSignDef;
-import com.thoughtworks.qdox.parser.expression.MultiplyDef;
-import com.thoughtworks.qdox.parser.expression.NotDef;
-import com.thoughtworks.qdox.parser.expression.NotEqualsDef;
-import com.thoughtworks.qdox.parser.expression.OrDef;
-import com.thoughtworks.qdox.parser.expression.ParenExpressionDef;
-import com.thoughtworks.qdox.parser.expression.PlusSignDef;
-import com.thoughtworks.qdox.parser.expression.PostDecrementDef;
-import com.thoughtworks.qdox.parser.expression.PostIncrementDef;
-import com.thoughtworks.qdox.parser.expression.PreDecrementDef;
-import com.thoughtworks.qdox.parser.expression.PreIncrementDef;
-import com.thoughtworks.qdox.parser.expression.QueryDef;
-import com.thoughtworks.qdox.parser.expression.RemainderDef;
-import com.thoughtworks.qdox.parser.expression.ShiftLeftDef;
-import com.thoughtworks.qdox.parser.expression.ShiftRightDef;
-import com.thoughtworks.qdox.parser.expression.SubtractDef;
-import com.thoughtworks.qdox.parser.expression.TypeRefDef;
-import com.thoughtworks.qdox.parser.expression.UnsignedShiftRightDef;
+import com.thoughtworks.qdox.parser.expression.*;
 import com.thoughtworks.qdox.parser.structs.AnnoDef;
 import com.thoughtworks.qdox.parser.structs.TypeDef;
 import com.thoughtworks.qdox.type.TypeResolver;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class DefaultJavaAnnotationAssembler
     implements ElemValueTransformer<AnnotationValue>
@@ -369,7 +293,7 @@ public class DefaultJavaAnnotationAssembler
     {
         FieldRef result;
         String name = annotationFieldRef.getName();
-        result = new FieldRef( name );
+        result = new FieldRef( name, this.typeResolver );
         result.setDeclaringClass( declaringClass );
         result.setClassLibrary( classLibrary );
         return result;
@@ -467,7 +391,6 @@ public class DefaultJavaAnnotationAssembler
     {
         return null;
     }
-    @Override
     public AnnotationValue transform( LambdaDef lambdaDef )
     {
         return null;
