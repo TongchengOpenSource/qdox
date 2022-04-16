@@ -19,66 +19,24 @@ package com.thoughtworks.qdox.builder.impl;
  * under the License.
  */
 
+import com.thoughtworks.qdox.builder.Builder;
+import com.thoughtworks.qdox.builder.TypeAssembler;
+import com.thoughtworks.qdox.library.ClassLibrary;
+import com.thoughtworks.qdox.model.*;
+import com.thoughtworks.qdox.model.expression.Expression;
+import com.thoughtworks.qdox.model.impl.*;
+import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.*;
+import com.thoughtworks.qdox.parser.expression.ExpressionDef;
+import com.thoughtworks.qdox.parser.structs.*;
+import com.thoughtworks.qdox.parser.structs.ModuleDef.*;
+import com.thoughtworks.qdox.type.TypeResolver;
+import com.thoughtworks.qdox.writer.ModelWriterFactory;
+
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-
-import com.thoughtworks.qdox.builder.Builder;
-import com.thoughtworks.qdox.builder.TypeAssembler;
-import com.thoughtworks.qdox.library.ClassLibrary;
-import com.thoughtworks.qdox.model.DocletTag;
-import com.thoughtworks.qdox.model.DocletTagFactory;
-import com.thoughtworks.qdox.model.JavaAnnotatedElement;
-import com.thoughtworks.qdox.model.JavaAnnotation;
-import com.thoughtworks.qdox.model.JavaClass;
-import com.thoughtworks.qdox.model.JavaConstructor;
-import com.thoughtworks.qdox.model.JavaExecutable;
-import com.thoughtworks.qdox.model.JavaGenericDeclaration;
-import com.thoughtworks.qdox.model.JavaMethod;
-import com.thoughtworks.qdox.model.JavaModule;
-import com.thoughtworks.qdox.model.JavaParameter;
-import com.thoughtworks.qdox.model.JavaSource;
-import com.thoughtworks.qdox.model.JavaType;
-import com.thoughtworks.qdox.model.JavaTypeVariable;
-import com.thoughtworks.qdox.model.expression.Expression;
-import com.thoughtworks.qdox.model.impl.AbstractBaseJavaEntity;
-import com.thoughtworks.qdox.model.impl.DefaultJavaClass;
-import com.thoughtworks.qdox.model.impl.DefaultJavaConstructor;
-import com.thoughtworks.qdox.model.impl.DefaultJavaField;
-import com.thoughtworks.qdox.model.impl.DefaultJavaInitializer;
-import com.thoughtworks.qdox.model.impl.DefaultJavaMethod;
-import com.thoughtworks.qdox.model.impl.DefaultJavaModule;
-import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor;
-import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.DefaultJavaExports;
-import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.DefaultJavaOpens;
-import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.DefaultJavaProvides;
-import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.DefaultJavaRequires;
-import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.DefaultJavaUses;
-import com.thoughtworks.qdox.model.impl.DefaultJavaPackage;
-import com.thoughtworks.qdox.model.impl.DefaultJavaParameter;
-import com.thoughtworks.qdox.model.impl.DefaultJavaSource;
-import com.thoughtworks.qdox.model.impl.DefaultJavaType;
-import com.thoughtworks.qdox.model.impl.DefaultJavaTypeVariable;
-import com.thoughtworks.qdox.parser.expression.ExpressionDef;
-import com.thoughtworks.qdox.parser.structs.AnnoDef;
-import com.thoughtworks.qdox.parser.structs.ClassDef;
-import com.thoughtworks.qdox.parser.structs.FieldDef;
-import com.thoughtworks.qdox.parser.structs.InitDef;
-import com.thoughtworks.qdox.parser.structs.MethodDef;
-import com.thoughtworks.qdox.parser.structs.ModuleDef;
-import com.thoughtworks.qdox.parser.structs.ModuleDef.ExportsDef;
-import com.thoughtworks.qdox.parser.structs.ModuleDef.OpensDef;
-import com.thoughtworks.qdox.parser.structs.ModuleDef.ProvidesDef;
-import com.thoughtworks.qdox.parser.structs.ModuleDef.RequiresDef;
-import com.thoughtworks.qdox.parser.structs.ModuleDef.UsesDef;
-import com.thoughtworks.qdox.parser.structs.PackageDef;
-import com.thoughtworks.qdox.parser.structs.TagDef;
-import com.thoughtworks.qdox.parser.structs.TypeDef;
-import com.thoughtworks.qdox.parser.structs.TypeVariableDef;
-import com.thoughtworks.qdox.type.TypeResolver;
-import com.thoughtworks.qdox.writer.ModelWriterFactory;
 
 /**
  * @author <a href="mailto:joew@thoughtworks.com">Joe Walnes</a>
@@ -568,7 +526,12 @@ public class ModelBuilder implements Builder {
         // annotations
         setAnnotations( currentField );
     }
-	
+
+    @Override
+    public void setFieldInitializationExpression(String expression) {
+        currentField.setInitializationExpression(expression);
+    }
+
     /** {@inheritDoc} */
 	public void endField() 
 	{

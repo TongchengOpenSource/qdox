@@ -48,7 +48,7 @@ import java.util.*;
      {
          // failed to load qdoxProperties
      }
-     finally 
+     finally
      {
         try
         {
@@ -69,6 +69,7 @@ import java.util.*;
     private int classDepth = 0;
     private int parenDepth = 0;
     private int nestingDepth = 0;
+    private int enumConstDepth = 0;
     private int annotationDepth = 0;
     private int assignmentDepth = 0;
     private int stateDepth = 0;
@@ -87,7 +88,7 @@ import java.util.*;
 	private void write() {
 		write( text() );
 	}
- 
+
 	private void write( String text ) {
     	try {
             if( writer != null ) {
@@ -108,7 +109,7 @@ import java.util.*;
     	}
         return yylex();
     }
-    
+
     public int getLine() {
         return ( annotatedElementLine == 0 ? yyline + 1 : Math.abs(annotatedElementLine) );
     }
@@ -125,21 +126,21 @@ import java.util.*;
     private void popState() {
         yybegin(stateStack[--stateDepth]);
     }
-    
+
     public String getCodeBody(){
         String s = codeBody.toString();
         codeBody = new StringBuffer(8192);
         return s;
     }
-    
+
     public void addCommentHandler(CommentHandler handler) {
       this.commentHandlers.add(handler);
     }
-    
+
     private int parseValue( String value, int defaultValue )
     {
       int result;
-      try 
+      try
       {
         result = Integer.parseInt( value );
       }
@@ -149,7 +150,7 @@ import java.util.*;
       }
       return result;
     }
-    
+
     private void markAnnotatedElementLine()
     {
       if( annotatedElementLine <= 0 )
@@ -162,7 +163,7 @@ import java.util.*;
     {
       annotatedElementLine = - Math.abs(annotatedElementLine);
     }
-    
+
     public JFlexLexer( java.io.Reader reader, java.io.Writer writer ) {
        this( reader );
        this.writer = writer;
@@ -195,16 +196,16 @@ DecimalFloatingPointLiteral	    = ( {Digits} ("." {Digits})? ({Exponent})? ([dDf
 						          ( "." {Digits} ({Exponent})? ([dDfF])?) |
 						          ( {Digits} {Exponent} ([dDfF])?) |
 						          ( {Digits} ({Exponent} )? ([dDfF]) )
-BinaryExponent                  = [pP] [+-]? ({DecimalNumeral})+					          
+BinaryExponent                  = [pP] [+-]? ({DecimalNumeral})+
 HexSignificand                  = ( {HexNumeral} "."? ) |
                                   ( "0" [xX] ( {HexDigits} )? "." ( {HexDigits} ) )
 HexadecimalFloatingPointLiteral = {HexSignificand} {BinaryExponent} ([dDfF])?
-UnicodeChar                     = \\u[a-fA-F0-9]{4}						  
+UnicodeChar                     = \\u[a-fA-F0-9]{4}
 Id						        = ([:jletter:]|{UnicodeChar}) ([:jletterdigit:]|{UnicodeChar})*
 JavadocEnd                      = "*"+ "/"
 
-%state JAVADOC JAVADOCTAG JAVADOCLINE CODEBLOCK PARENBLOCK ASSIGNMENT STRING CHAR SINGLELINECOMMENT MULTILINECOMMENT  ANNOTATION ANNOSTRING ANNOCHAR ARGUMENTS NAME 
-%state ANNOTATIONTYPE ENUM MODULE RECORD TYPE ANNOTATIONNOARG ATANNOTATION
+%state JAVADOC JAVADOCTAG JAVADOCLINE CODEBLOCK PARENBLOCK ASSIGNMENT STRING CHAR SINGLELINECOMMENT MULTILINECOMMENT ANNOTATION ANNOSTRING ANNOCHAR ARGUMENTS NAME
+%state ANNOTATIONTYPE ENUM ENUMCONSTARG MODULE RECORD TYPE ANNOTATIONNOARG ATANNOTATION
 %state NAME_OR_MODIFIER
 
 %%
@@ -216,7 +217,7 @@ JavadocEnd                      = "*"+ "/"
                           else
                           {
                             return Parser.IDENTIFIER;
-                          } 
+                          }
                         }
     "module"            { if ( classDepth == 0 )
                           {
@@ -227,7 +228,7 @@ JavadocEnd                      = "*"+ "/"
                           else
                           {
                             return Parser.IDENTIFIER;
-                          } 
+                          }
                         }
 }
 <NAME_OR_MODIFIER> {
@@ -291,17 +292,17 @@ JavadocEnd                      = "*"+ "/"
         classDepth++;
         braceMode = TYPE;
         pushState(NAME);
-        return Parser.CLASS; 
+        return Parser.CLASS;
     }
-    
-    "interface"         { 
+
+    "interface"         {
         markAnnotatedElementLine();
         classDepth++;
         braceMode = TYPE;
         pushState(NAME);
         return Parser.INTERFACE;
     }
-    
+
     "enum"              {
         markAnnotatedElementLine();
         classDepth++;
@@ -315,6 +316,7 @@ JavadocEnd                      = "*"+ "/"
         return Parser.AT;
     }
     "{"                 {
+        // mark04
         resetAnnotatedElementLine();
         if(braceMode >= 0) {
           if(braceMode == ENUM) {
@@ -333,14 +335,14 @@ JavadocEnd                      = "*"+ "/"
           {
             braceMode = TYPE;
           }
-          else 
+          else
           {
             braceMode = CODEBLOCK;
           }
           return Parser.BRACEOPEN;
         }
     }
-    "}"  { 
+    "}"  {
         nestingDepth--;
         classDepth--;
         popState();
@@ -352,7 +354,7 @@ JavadocEnd                      = "*"+ "/"
         {
           braceMode = CODEBLOCK;
         }
-        return Parser.BRACECLOSE; 
+        return Parser.BRACECLOSE;
     }
 
     "/**" ~"*/" {
@@ -361,7 +363,7 @@ JavadocEnd                      = "*"+ "/"
       }
     }
 
-    "=" {WhiteSpace}* { 
+    "=" {WhiteSpace}* {
         assignmentDepth = nestingDepth;
         getCodeBody(); /* reset codebody */
         appendingToCodeBody = true;
@@ -380,6 +382,7 @@ JavadocEnd                      = "*"+ "/"
     ";"  {  resetAnnotatedElementLine();
             return Parser.SEMI; }
     "("  {
+            // mark01
             nestingDepth++;
             if( parenMode >= 0 ) {
               annotationDepth = nestingDepth;
@@ -391,12 +394,12 @@ JavadocEnd                      = "*"+ "/"
 }
 <MODULE> {
 	"{"                 { return Parser.BRACEOPEN; }
-    "}"                 { popState(); 
+    "}"                 { popState();
                           return Parser.BRACECLOSE; }
 
     ","                 { pushState(NAME); return Parser.COMMA; }
 	";"                 { return Parser.SEMI; }
-	
+
     "exports"           { pushState(NAME); return Parser.EXPORTS; }
     "opens"             { pushState(NAME); return Parser.OPENS; }
     "provides"          { pushState(NAME); return Parser.PROVIDES; }
@@ -406,12 +409,13 @@ JavadocEnd                      = "*"+ "/"
     "with"              { pushState(NAME); return Parser.WITH; }
 }
 <ENUM> {
-    ";"  { 
-    		enumConstantMode = false; 
-    		braceMode = CODEBLOCK; 
+    ";"  {
+    		enumConstantMode = false;
+    		braceMode = CODEBLOCK;
     		return Parser.SEMI;
     	 }
     "("  {
+            // mark02
             nestingDepth++;
             if(parenMode >= 0) {
               annotationDepth = nestingDepth;
@@ -422,7 +426,8 @@ JavadocEnd                      = "*"+ "/"
             else if(enumConstantMode) 
             {  
               annotationDepth = nestingDepth;
-              pushState(ARGUMENTS);
+              enumConstDepth = 1;
+              pushState(ENUMCONSTARG);
               return Parser.PARENOPEN;
             }
             else {
@@ -430,6 +435,29 @@ JavadocEnd                      = "*"+ "/"
             }
          }
 }
+
+<ENUMCONSTARG> {
+    "(" {
+          // mark05
+          codeBody.append("(");
+          enumConstDepth++;
+          appendingToCodeBody = true;
+      }
+    ")" {
+          // mark06
+        if (--enumConstDepth == 0) {
+          popState();
+          appendingToCodeBody = false;
+          // 重新扫描一次右括号，否则检测不到方法列表结束
+          yypushback(1);
+          return Parser.CODEBLOCK;
+        }
+        else {
+          codeBody.append(")");
+        }
+    }
+}
+
 <ENUM, RECORD, TYPE> {
     "default"           { return Parser.DEFAULT; }
 }
@@ -446,10 +474,10 @@ JavadocEnd                      = "*"+ "/"
          }
 }
 <CODEBLOCK> {
-     "{"  { 
+     "{"  {
             if(codeblockDepth++ > 0 ) {
-            codeBody.append('{');
-            }  
+                codeBody.append('{');
+            }
           }
      "}"                 {
         if (--codeblockDepth == 0) {
@@ -468,10 +496,14 @@ JavadocEnd                      = "*"+ "/"
     "}"                 { nestingDepth--; return Parser.BRACECLOSE; }
 }
 <ARGUMENTS> {
-	"{"                 { pushState(CODEBLOCK);
+  "{"                 {
+                          // mark03
+                          pushState(CODEBLOCK);
                           braceMode = -1;
-                          yypushback(1); /* (re)enter brace in right mode */ }
-    "}"                 { return Parser.BRACECLOSE; }
+                          yypushback(1); /* (re)enter brace in right mode */
+                      }
+  "}"                 { return Parser.BRACECLOSE; }
+
 }
 
 <ANNOTATION,ARGUMENTS> {
@@ -542,9 +574,9 @@ JavadocEnd                      = "*"+ "/"
 	{IntegerLiteral}	{ return Parser.INTEGER_LITERAL; }
 	{FloatingPointLiteral} { return Parser.FLOAT_LITERAL; }
 	"true" | "false"	{ return Parser.BOOLEAN_LITERAL; }
-	
+
 	"class"				{ return Parser.CLASS; }
-	
+
 	"new"               { return Parser.NEW; }
 
 	{Id}                { return Parser.IDENTIFIER; }
@@ -565,8 +597,8 @@ JavadocEnd                      = "*"+ "/"
 }
 
 <PARENBLOCK> {
-    "("             { 
-        nestingDepth++; 
+    "("             {
+        nestingDepth++;
         if (appendingToCodeBody) { codeBody.append("("); }
     }
     ")"             {
@@ -579,13 +611,13 @@ JavadocEnd                      = "*"+ "/"
 }
 
 <ASSIGNMENT> {
-    ";"                 { 
+    ";"                 {
         resetAnnotatedElementLine();
         if (nestingDepth == assignmentDepth) {
             appendingToCodeBody = true;
             newMode = false;
-            popState(); 
-            return Parser.SEMI; 
+            popState();
+            return Parser.SEMI;
         } else {
             codeBody.append(';');
         }
@@ -593,8 +625,8 @@ JavadocEnd                      = "*"+ "/"
     ","                 {
         if (nestingDepth == assignmentDepth) {
             appendingToCodeBody = true;
-            popState(); 
-            return Parser.COMMA; 
+            popState();
+            return Parser.COMMA;
         } else {
             codeBody.append(',');
         }
@@ -607,23 +639,23 @@ JavadocEnd                      = "*"+ "/"
     "}"                 {
 		codeBody.append('}');
         nestingDepth--;
-    	if (nestingDepth==assignmentDepth) { 
+    	if (nestingDepth==assignmentDepth) {
             anonymousMode=false;
         }
     }
 
-    "("                 { 
-        codeBody.append('('); 
-        parenDepth = nestingDepth++; 
-        pushState(PARENBLOCK); 
+    "("                 {
+        codeBody.append('(');
+        parenDepth = nestingDepth++;
+        pushState(PARENBLOCK);
     }
     ")"                 {
         codeBody.append(')');
-        nestingDepth--; 
+        nestingDepth--;
         if (nestingDepth < assignmentDepth) {
-            appendingToCodeBody = true; 
-            popState(); 
-            return Parser.PARENCLOSE; 
+            appendingToCodeBody = true;
+            popState();
+            return Parser.PARENCLOSE;
         }
     }
     "["                 { codeBody.append('['); bracketMode = true; nestingDepth++; }
@@ -632,7 +664,7 @@ JavadocEnd                      = "*"+ "/"
         codeBody.append("new");
         if (nestingDepth==assignmentDepth) {
             newMode=true;
-        } 
+        }
     }
     "." [ \t\r\n]* / "<" {
       codeBody.append('.');
@@ -641,7 +673,7 @@ JavadocEnd                      = "*"+ "/"
     "<"                 {
         codeBody.append('<');
         if (!bracketMode && newMode && !anonymousMode) {
-            nestingDepth++; 
+            nestingDepth++;
         }
     }
     ">"                 {
@@ -649,7 +681,7 @@ JavadocEnd                      = "*"+ "/"
         if (!anonymousMode) {
 	        if (!bracketMode && newMode) {
     	        nestingDepth--;
-    	    	if (nestingDepth==assignmentDepth) { 
+    	    	if (nestingDepth==assignmentDepth) {
     	            newMode=false;
     	        }
         	}
@@ -668,7 +700,7 @@ JavadocEnd                      = "*"+ "/"
   "/**/"              { if (appendingToCodeBody) { codeBody.append("/**/"); } }
 }
 
-<CODEBLOCK, ASSIGNMENT> { 
+<CODEBLOCK, ASSIGNMENT> {
     .|{WhiteSpace}	    { codeBody.append(yytext()); }
 }
 

@@ -696,12 +696,19 @@ EnumConstant: Annotations_opt IDENTIFIER
                 makeField( td, "", true );
                 builder.beginField( fd );
               }
-              Arguments_opt ClassBody_opt
+              EnumConstantArguments ClassBody_opt
               {
+                builder.setFieldInitializationExpression(lexer.getCodeBody());
                 builder.endField();
                 typeStack.pop();
               }
             ;
+
+EnumConstantArguments:
+                     | PARENOPEN EnumConstantArgumentList PARENCLOSE
+
+EnumConstantArgumentList:
+                        | CODEBLOCK
 
 // EnumBodyDeclarations:
 //     ; {ClassBodyDeclaration}
@@ -1460,7 +1467,7 @@ PreDecrementExpression: MINUSMINUS UnaryExpression
 //     ~ UnaryExpression 
 //     ! UnaryExpression 
 //     CastExpression
-UnaryExpressionNotPlusMinus: PostfixExpression 
+UnaryExpressionNotPlusMinus: PostfixExpression
                            | TILDE UnaryExpression
                              {
                                $$ = new NotDef($2);
@@ -1468,7 +1475,7 @@ UnaryExpressionNotPlusMinus: PostfixExpression
                            | EXCLAMATION UnaryExpression
                              {
                                $$ = new LogicalNotDef($2);
-                             } 
+                             }
                            | CastExpression
                            ;
 
@@ -1567,7 +1574,7 @@ ClassOrInterfaceType: QualifiedIdentifier /* =PackageName */ DOT Annotations_opt
                       TypeArguments_opt
                       {
                         $$ = typeStack.pop();
-                      };
+                      }
                     |
                       TypeDeclSpecifier 
                       {
@@ -2056,11 +2063,11 @@ private void makeField(TypeDef field, String body, boolean enumConstant) {
 }
 
 public void onComment( String comment, int line, int column ) {
-  DefaultJavaCommentLexer commentLexer  = new DefaultJavaCommentLexer( new java.io.StringReader( comment ) );
-  commentLexer.setLineOffset( line );
-  commentLexer.setColumnOffset( column );
-  DefaultJavaCommentParser commentParser = new DefaultJavaCommentParser( commentLexer, builder);
-  commentParser.setDebugLexer( this.debugLexer );
-  commentParser.setDebugParser( this.yydebug );
-  commentParser.parse();
+    DefaultJavaCommentLexer commentLexer  = new DefaultJavaCommentLexer( new java.io.StringReader( comment ) );
+    commentLexer.setLineOffset( line );
+    commentLexer.setColumnOffset( column );
+    DefaultJavaCommentParser commentParser = new DefaultJavaCommentParser( commentLexer, builder);
+    commentParser.setDebugLexer( this.debugLexer );
+    commentParser.setDebugParser( this.yydebug );
+    commentParser.parse();
 }
