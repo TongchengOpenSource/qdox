@@ -205,7 +205,7 @@ Id						        = ([:jletter:]|{UnicodeChar}) ([:jletterdigit:]|{UnicodeChar})*
 JavadocEnd                      = "*"+ "/"
 
 %state JAVADOC JAVADOCTAG JAVADOCLINE CODEBLOCK PARENBLOCK ASSIGNMENT STRING CHAR SINGLELINECOMMENT MULTILINECOMMENT ANNOTATION ANNOSTRING ANNOCHAR ARGUMENTS NAME
-%state ANNOTATIONTYPE ENUM ENUMCONSTARG MODULE RECORD TYPE ANNOTATIONNOARG ATANNOTATION
+%state ANNOTATIONTYPE ENUM MODULE RECORD TYPE ANNOTATIONNOARG ATANNOTATION
 %state NAME_OR_MODIFIER
 
 %%
@@ -423,39 +423,19 @@ JavadocEnd                      = "*"+ "/"
               parenMode = -1;
               return Parser.PARENOPEN;
             }
-            else if(enumConstantMode) 
-            {  
+            else if(enumConstantMode)
+            {
               annotationDepth = nestingDepth;
               enumConstDepth = 1;
-              pushState(ENUMCONSTARG);
+              // reuse codeblock state
+              codeblockDepth = 1;
+              pushState(CODEBLOCK);
               return Parser.PARENOPEN;
             }
             else {
                 return Parser.PARENOPEN;
             }
          }
-}
-
-<ENUMCONSTARG> {
-    "(" {
-          // mark05
-          codeBody.append("(");
-          enumConstDepth++;
-          appendingToCodeBody = true;
-      }
-    ")" {
-          // mark06
-        if (--enumConstDepth == 0) {
-          popState();
-          appendingToCodeBody = false;
-          // Rescan the closing bracket once, otherwise the end of the method list cannot be detected
-          yypushback(1);
-          return Parser.CODEBLOCK;
-        }
-        else {
-          codeBody.append(")");
-        }
-    }
 }
 
 <ENUM, RECORD, TYPE> {
@@ -488,6 +468,34 @@ JavadocEnd                      = "*"+ "/"
         } else {
             codeBody.append('}');
         }
+    }
+    // for ENUMCONSTARG state
+    "(" {
+          // mark05
+          if (this.codeblockDepth == 1/*out of inner code block*/ && this.enumConstDepth > 0) {
+              // now is ENUMCONSTARG state
+              codeBody.append("(");
+              enumConstDepth++;
+              appendingToCodeBody = true;
+          }
+      }
+    ")" {
+          // mark06
+          if (this.codeblockDepth == 1/*out of inner code block*/ && this.enumConstDepth > 0) {
+              // now is ENUMCONSTARG state
+              if (--enumConstDepth == 0) {
+                popState();
+                appendingToCodeBody = false;
+                // Rescan the closing bracket once, otherwise the end of the enum constant arguments list cannot be detected
+                yypushback(1);
+                // end of reuse code block
+                codeblockDepth = 0;
+                return Parser.CODEBLOCK;
+              }
+              else {
+                codeBody.append(")");
+              }
+          }
     }
 }
 
