@@ -448,7 +448,7 @@ JavadocEnd                      = "*"+ "/"
         if (--enumConstDepth == 0) {
           popState();
           appendingToCodeBody = false;
-          // 重新扫描一次右括号，否则检测不到方法列表结束
+          // Rescan the closing bracket once, otherwise the end of the method list cannot be detected
           yypushback(1);
           return Parser.CODEBLOCK;
         }
