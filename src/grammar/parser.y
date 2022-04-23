@@ -1000,8 +1000,8 @@ PrimaryNoNewArray: Literal
                      $$ = new TypeRefDef(new TypeDef($1.getName(), $2));
                    }
                  | PARENOPEN Expression PARENCLOSE
-                   { 
-                     $$ = new ParenExpressionDef($2); 
+                   {
+                     $$ = new ParenExpressionDef($2);
                    }
                  | ClassInstanceCreationExpression
                  | QualifiedIdentifier DOT CLASS 
@@ -1013,9 +1013,9 @@ PrimaryNoNewArray: Literal
                      $$ = new TypeRefDef(new TypeDef($1, $2));
                    } 
                  | MethodReference 
-                 | QualifiedIdentifier 
-                   { 
-                     $$ = new FieldRefDef($1); 
+                 | QualifiedIdentifier
+                   {
+                     $$ = new FieldRefDef($1);
                    }
                  ;
 
@@ -1566,7 +1566,7 @@ ReferenceType: TypeVariable
 // InterfaceType:
 //     ClassType
 // Parser can't see the difference  
-ClassOrInterfaceType: QualifiedIdentifier /* =PackageName */ DOT Annotations_opt IDENTIFIER 
+ClassOrInterfaceType: QualifiedIdentifier /* =PackageName */ DOT Annotations_opt IDENTIFIER
                       {
                         TypeDef td = new TypeDef($1 + '.' + $4,0);
                         $$ = typeStack.push(td);
@@ -1576,7 +1576,7 @@ ClassOrInterfaceType: QualifiedIdentifier /* =PackageName */ DOT Annotations_opt
                         $$ = typeStack.pop();
                       }
                     |
-                      TypeDeclSpecifier 
+                      TypeDeclSpecifier
                       {
                         TypeDef td = new TypeDef($1,0);
                         $$ = typeStack.push(td);
@@ -1597,7 +1597,7 @@ TypeVariable: Annotations_opt QualifiedIdentifier
 
 // ArrayType:
 //     PrimitiveType Dims 
-//     ClassOrInterfaceType Dims 
+//     ClassOrInterfaceType Dims
 //     TypeVariable Dims
 ArrayType: ClassOrInterfaceType Dims
            {
@@ -1791,8 +1791,8 @@ PrimitiveType: BYTE
 // TypeDeclSpecifier: TypeName | ClassOrInterfaceType . Identifier
 // TypeName:          Identifier | TypeName . Identifier
 TypeDeclSpecifier: QualifiedIdentifier
-                 | ClassOrInterfaceType DOT IDENTIFIER 
-                   { 
+                 | ClassOrInterfaceType DOT IDENTIFIER
+                   {
                      $$ = $1.getName() + '.' + $3;
                    };
 
