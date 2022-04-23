@@ -19,13 +19,14 @@ package com.thoughtworks.qdox.library;
  * under the License.
  */
 
-import java.io.Serializable;
-import java.util.Collection;
-
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaModule;
 import com.thoughtworks.qdox.model.JavaPackage;
 import com.thoughtworks.qdox.model.JavaSource;
+
+import javax.annotation.Nonnull;
+import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * Main methods of a ClassLibrary, which can be used by every Model 
@@ -50,7 +51,7 @@ public interface ClassLibrary
      * @param name The (binary) name of the JavaClass
      * @return the JavaClass, otherwise <code>null</code>
      */
-    JavaClass getJavaClass( String name );
+    JavaClass getJavaClass(@Nonnull String name );
 
     /**
      * Try to retrieve the JavaClass by the (binary) name.

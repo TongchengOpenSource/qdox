@@ -430,6 +430,7 @@ JavadocEnd                      = "*"+ "/"
               // reuse codeblock state
               codeblockDepth = 1;
               pushState(CODEBLOCK);
+              this.appendingToCodeBody = true;
               return Parser.PARENOPEN;
             }
             else {
@@ -474,10 +475,10 @@ JavadocEnd                      = "*"+ "/"
           // mark05
           if (this.codeblockDepth == 1/*out of inner code block*/ && this.enumConstDepth > 0) {
               // now is ENUMCONSTARG state
-              codeBody.append("(");
               enumConstDepth++;
               appendingToCodeBody = true;
           }
+          codeBody.append("(");
       }
     ")" {
           // mark06
@@ -492,10 +493,8 @@ JavadocEnd                      = "*"+ "/"
                 codeblockDepth = 0;
                 return Parser.CODEBLOCK;
               }
-              else {
-                codeBody.append(")");
-              }
           }
+          codeBody.append(")");
     }
 }
 

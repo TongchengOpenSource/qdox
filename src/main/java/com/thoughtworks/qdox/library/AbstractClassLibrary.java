@@ -19,12 +19,6 @@ package com.thoughtworks.qdox.library;
  * under the License.
  */
 
-import java.net.URL;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
 import com.thoughtworks.qdox.builder.Builder;
 import com.thoughtworks.qdox.builder.ModelBuilderFactory;
 import com.thoughtworks.qdox.builder.impl.ModelBuilder;
@@ -36,6 +30,13 @@ import com.thoughtworks.qdox.model.impl.DefaultDocletTagFactory;
 import com.thoughtworks.qdox.model.impl.DefaultJavaPackage;
 import com.thoughtworks.qdox.parser.structs.ClassDef;
 import com.thoughtworks.qdox.writer.ModelWriterFactory;
+
+import javax.annotation.Nonnull;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A ClassLibrary can be compared with a java classloader. 
@@ -90,7 +91,7 @@ public abstract class AbstractClassLibrary
      * @param name the binary name of the class
      * @return the JavaClass matching the name, otherwise <code>null</code>
      */
-    public final JavaClass getJavaClass( String name ) {
+    public final JavaClass getJavaClass(@Nonnull String name ) {
        return getJavaClass( name, false ); 
     }
     

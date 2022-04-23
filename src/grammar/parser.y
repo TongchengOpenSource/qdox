@@ -696,9 +696,15 @@ EnumConstant: Annotations_opt IDENTIFIER
                 makeField( td, "", true );
                 builder.beginField( fd );
               }
-              EnumConstantArguments ClassBody_opt
+              EnumConstantArguments
               {
-                builder.setFieldInitializationExpression(lexer.getCodeBody().trim());
+                String codeBody = lexer.getCodeBody();
+                if (codeBody != null) {
+                  builder.setFieldInitializationExpression(codeBody);
+                }
+              }
+              ClassBody_opt
+              {
                 builder.endField();
                 typeStack.pop();
               }

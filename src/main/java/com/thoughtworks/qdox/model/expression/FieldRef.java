@@ -114,7 +114,8 @@ public class FieldRef
     public String toString()
     {
         JavaField field = getField();
-        if ( field != null && !getDeclaringClass().equals( field.getDeclaringClass() ) )
+        // fix npe
+        if ( field != null && getDeclaringClass() != null && !getDeclaringClass().equals( field.getDeclaringClass() ) )
         {
             return field.getDeclaringClass().getCanonicalName() + "." + field.getName();
         }
@@ -177,11 +178,14 @@ public class FieldRef
 
     public JavaField getField()
     {
-        JavaClass declaringClass = getDeclaringClass();
-        if ( fieldIndex < 0 && declaringClass != null)
+        if ( fieldIndex < 0 )
         {
-            field = resolveField( declaringClass, 0, parts.length - 1 );
-            fieldIndex = 0;
+            JavaClass declaringClass = getDeclaringClass();
+            if ( declaringClass != null )
+            {
+                field = resolveField( declaringClass, 0, parts.length - 1 );
+                fieldIndex = 0;
+            }
 
             if ( field == null )
             {
@@ -202,23 +206,23 @@ public class FieldRef
                     }
                 }
             }
-            
+
             if ( field == null )
             {
                 ClassLibrary classLibrary = getClassLibrary();
-                if ( classLibrary != null )
+                if ( classLibrary != null && declaringClass != null)
                 {
-                    List<String> imports = getDeclaringClass().getSource().getImports();
+                    List<String> imports = declaringClass.getSource().getImports();
                     for ( String i : imports )
                     {
                         if ( i.startsWith( "static" ) )
                         {
                             String member = i.substring( i.lastIndexOf( '.' ) + 1 );
-                            if ( "*".equals( member ) || getNamePrefix( 0 ).equals( member )  ) 
+                            if ( "*".equals( member ) || getNamePrefix( 0 ).equals( member )  )
                             {
                                 String className =  i.substring( 7, i.lastIndexOf( '.' ) ).trim();
                                 JavaClass javaClass = classLibrary.getJavaClass( className );
-                                JavaField tmpField = javaClass.getFieldByName( member ); 
+                                JavaField tmpField = javaClass.getFieldByName( member );
                                 if ( tmpField != null && ( javaClass.isInterface() || tmpField.isStatic() ) )
                                 {
                                     field = tmpField;
@@ -231,20 +235,26 @@ public class FieldRef
             }
         }
 
-        if (field == null) {
+        // resolve of value of static final values of other classes
+        if (field == null && this.typeResolver != null) {
+            // reset to find
+            this.fieldIndex = 0;
             // the field may in any other class, try to resolve it
             for (int i = 0; i < parts.length - 1; ++i) {
                 String className = getNamePrefix(i);
                 JavaClass javaClass = typeResolver.resolveJavaClass(className);
+                this.fieldIndex++;
                 if (javaClass != null) {
-                    this.fieldIndex++;
                     field = resolveField(javaClass, i + 1, parts.length - 1);
                     if (field != null) {
                         break;
                     }
                 }
             }
-
+            if (field == null) {
+                // not found, reset to 0
+                this.fieldIndex = 0;
+            }
         }
 
         return field;

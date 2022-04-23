@@ -1,49 +1,21 @@
 package com.thoughtworks.qdox;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.NotSerializableException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.thoughtworks.qdox.library.ClassLibraryBuilder;
 import com.thoughtworks.qdox.library.ErrorHandler;
 import com.thoughtworks.qdox.library.OrderedClassLibraryBuilder;
-import com.thoughtworks.qdox.model.BeanProperty;
-import com.thoughtworks.qdox.model.DocletTag;
-import com.thoughtworks.qdox.model.JavaAnnotation;
-import com.thoughtworks.qdox.model.JavaClass;
-import com.thoughtworks.qdox.model.JavaConstructor;
-import com.thoughtworks.qdox.model.JavaField;
-import com.thoughtworks.qdox.model.JavaGenericDeclaration;
-import com.thoughtworks.qdox.model.JavaMethod;
-import com.thoughtworks.qdox.model.JavaPackage;
-import com.thoughtworks.qdox.model.JavaParameter;
-import com.thoughtworks.qdox.model.JavaParameterizedType;
-import com.thoughtworks.qdox.model.JavaSource;
-import com.thoughtworks.qdox.model.JavaType;
-import com.thoughtworks.qdox.model.JavaTypeVariable;
+import com.thoughtworks.qdox.model.*;
 import com.thoughtworks.qdox.model.util.SerializationUtils;
 import com.thoughtworks.qdox.parser.ParseException;
 import com.thoughtworks.qdox.testdata.PropertyClass;
-
 import junit.framework.TestCase;
+
+import java.io.*;
+import java.net.URL;
+import java.util.*;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.*;
 
 public class JavaProjectBuilderTest extends TestCase
 {
@@ -1398,8 +1370,12 @@ public class JavaProjectBuilderTest extends TestCase
         		" }";
         JavaClass cls = builder.addSource(new StringReader( source )).getClassByName( "AssignmentOperators" );
         JavaField xoreq = cls.getFieldByName( "XOREQ" );
-        assertEquals( 1, xoreq.getEnumConstantArguments().size() );
-        assertEquals( "a ^= b", xoreq.getEnumConstantArguments().get(0).getParameterValue() );
+        // edit by clu on 2022-4-23 12:49:01
+        // qdox not support EnumConstant with complex arguments, such as a lambda expression with type cast,
+        // so the arguments of EnumConstant will be parsed as CodeBlock that can be get by getInitializationExpression method
+        assertEquals(" a ^= b ", xoreq.getInitializationExpression());
+        /*assertEquals( 1, xoreq.getEnumConstantArguments().size() );
+        assertEquals( "a ^= b", xoreq.getEnumConstantArguments().get(0).getParameterValue() );*/
     }
     
     public void testIncrementAndDecrement()
@@ -1412,10 +1388,14 @@ public class JavaProjectBuilderTest extends TestCase
                 " }";
         JavaClass cls = builder.addSource(new StringReader( source )).getClassByName( "Expression" );
         JavaField postInc = cls.getFieldByName( "POSTINC" );
-        assertEquals( 1, postInc.getEnumConstantArguments().size() );
-        assertEquals( "a++", postInc.getEnumConstantArguments().get( 0 ).getParameterValue() );
+        // edit by clu on 2022-4-23 12:49:01
+        // qdox not support EnumConstant with complex arguments, such as a lambda expression with type cast,
+        // so the arguments of EnumConstant will be parsed as CodeBlock that can be get by getInitializationExpression method
+        assertEquals( " a++ ", postInc.getInitializationExpression());
+        /*assertEquals( 1, postInc.getEnumConstantArguments().size() );
+        assertEquals( "a++", postInc.getEnumConstantArguments().get( 0 ).getParameterValue() );*/
     }
-    
+
     // for QDOX-230
     public void testInterfaceAnnotations() {
         String source = "@RemoteServiceRelativePath(\"greetings\")\r\n" + 
@@ -1569,6 +1549,49 @@ public class JavaProjectBuilderTest extends TestCase
             "    }\r\n" + 
             "}";
         builder.addSource( new StringReader( source ) ); 
+    }
+
+    public void testComplexEnum2()
+    {
+        String source = "import java.util.function.BiFunction;\n" +
+            "\n" +
+            "public enum MyEnum {\n" +
+            "\n" +
+            "    ONE((((((System.currentTimeMillis() < 0))))) ? (BiFunction<String, String, String>) (a, b) -> {\n" +
+            "        String s = (\"1)}}}}}}\");\n" +
+            "        int i = ((((2))));\n" +
+            "        return a;\n" +
+            "    } : null),\n" +
+            "\n" +
+            "\n" +
+            "    ONE3((BiFunction<String, String, String>) (a, b) -> a + b + \"\\\"\\\\)))}}}}\"),\n" +
+            "    ONE2((BiFunction<String, String, String>) String::concat),\n" +
+            "    ONE4(null, null, (BiFunction<String, String, String>) (a, b) -> {\n" +
+            "        String s = (\"1)}}}}}}\");\n" +
+            "        int i = ((((2))));\n" +
+            "        return a;\n" +
+            "    }, (BiFunction<String, String, String>) (a, b) -> a + b + \"\\\"\\\\)))}}}}\", 1)\n" +
+            "\n" +
+            "    ;\n" +
+            "\n" +
+            "    MyEnum() {\n" +
+            "    }\n" +
+            "\n" +
+            "    MyEnum(String s, String s2) {\n" +
+            "    }\n" +
+            "\n" +
+            "    MyEnum(BiFunction<String, String, String> f) {\n" +
+            "        int i = (((((1)))));\n" +
+            "    }\n" +
+            "\n" +
+            "    MyEnum(BiFunction<String, String, String> f1,\n" +
+            "             BiFunction<String, String, String> f2,\n" +
+            "             BiFunction<String, String, String> f3,\n" +
+            "             BiFunction<String, String, String> f4,\n" +
+            "             int i) {\n" +
+            "    }\n" +
+            "}\n";
+        builder.addSource( new StringReader( source ) );
     }
     
     public void testFQNField()

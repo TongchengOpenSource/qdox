@@ -1,53 +1,12 @@
 package com.thoughtworks.qdox.writer.impl;
 
-import java.util.Collection;
-
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-
-import com.thoughtworks.qdox.model.DocletTag;
-import com.thoughtworks.qdox.model.JavaAnnotatedElement;
-import com.thoughtworks.qdox.model.JavaAnnotation;
-import com.thoughtworks.qdox.model.JavaClass;
-import com.thoughtworks.qdox.model.JavaConstructor;
-import com.thoughtworks.qdox.model.JavaField;
-import com.thoughtworks.qdox.model.JavaInitializer;
-import com.thoughtworks.qdox.model.JavaMethod;
-import com.thoughtworks.qdox.model.JavaModule;
-import com.thoughtworks.qdox.model.JavaModuleDescriptor;
-import com.thoughtworks.qdox.model.JavaModuleDescriptor.JavaExports;
-import com.thoughtworks.qdox.model.JavaModuleDescriptor.JavaOpens;
-import com.thoughtworks.qdox.model.JavaModuleDescriptor.JavaProvides;
-import com.thoughtworks.qdox.model.JavaModuleDescriptor.JavaRequires;
-import com.thoughtworks.qdox.model.JavaModuleDescriptor.JavaUses;
-import com.thoughtworks.qdox.model.JavaPackage;
-import com.thoughtworks.qdox.model.JavaParameter;
-import com.thoughtworks.qdox.model.JavaSource;
-import com.thoughtworks.qdox.model.JavaType;
+import com.thoughtworks.qdox.model.*;
+import com.thoughtworks.qdox.model.JavaModuleDescriptor.*;
 import com.thoughtworks.qdox.model.expression.AnnotationValue;
 import com.thoughtworks.qdox.model.expression.Expression;
 import com.thoughtworks.qdox.writer.ModelWriter;
+
+import java.util.*;
 
 public class DefaultModelWriter
     implements ModelWriter
@@ -217,6 +176,9 @@ public class DefaultModelWriter
     /** {@inheritDoc} */
     public ModelWriter writeField( JavaField field )
     {
+        if (field == null) {
+            return this;
+        }
         commentHeader( field );
 
         writeAllModifiers( field.getModifiers() );
@@ -265,6 +227,9 @@ public class DefaultModelWriter
     /** {@inheritDoc} */
     public ModelWriter writeConstructor( JavaConstructor constructor )
     {
+        if (constructor == null) {
+            return this;
+        }
         commentHeader( constructor );
         writeAllModifiers( constructor.getModifiers() );
 
@@ -308,6 +273,9 @@ public class DefaultModelWriter
     /** {@inheritDoc} */
     public ModelWriter writeMethod( JavaMethod method )
     {
+        if (method == null) {
+            return this;
+        }
         commentHeader( method );
         writeAccessibilityModifier( method.getModifiers() );
         writeNonAccessibilityModifiers( method.getModifiers() );
@@ -431,6 +399,9 @@ public class DefaultModelWriter
 
     protected void commentHeader( JavaAnnotatedElement entity )
     {
+        if (entity == null) {
+            return;
+        }
         if ( entity.getComment() != null || ( entity.getTags().size() > 0 ) )
         {
             buffer.write( "/**" );

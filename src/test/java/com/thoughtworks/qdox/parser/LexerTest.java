@@ -1,15 +1,14 @@
 package com.thoughtworks.qdox.parser;
 
+import com.thoughtworks.qdox.parser.impl.JFlexLexer;
+import com.thoughtworks.qdox.parser.impl.Parser;
+import junit.framework.TestCase;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
-
-import junit.framework.TestCase;
-
-import com.thoughtworks.qdox.parser.impl.JFlexLexer;
-import com.thoughtworks.qdox.parser.impl.Parser;
 
 public class LexerTest extends TestCase {
 
@@ -472,7 +471,10 @@ public class LexerTest extends TestCase {
         assertLex(Parser.BRACEOPEN, lexer);
         assertLex(Parser.IDENTIFIER, "a", lexer);
         assertLex(Parser.PARENOPEN, lexer);
-        assertLex(Parser.STRING_LITERAL, "\"", lexer);
+        // edit by clu on 2022-4-23 12:49:01
+        // qdox not support EnumConstant with complex arguments, such as a lambda expression with type cast
+        assertLex(Parser.CODEBLOCK, lexer);
+        // assertLex(Parser.STRING_LITERAL, "\"", lexer);
         assertEquals( "\"hello\"", lexer.getCodeBody() );
         assertLex(Parser.PARENCLOSE, lexer);
         assertLex(Parser.SEMI, lexer);
@@ -618,7 +620,10 @@ public class LexerTest extends TestCase {
     	assertLex(Parser.PARENCLOSE, lexer);
     	assertLex(Parser.IDENTIFIER, "VALUE", lexer);
         assertLex(Parser.PARENOPEN, lexer);
-        assertLex(Parser.STRING_LITERAL, lexer);
+        // edit by clu on 2022-4-23 12:49:01
+        // qdox not support EnumConstant with complex arguments, such as a lambda expression with type cast
+        assertLex(Parser.CODEBLOCK, lexer);
+        // assertLex(Parser.STRING_LITERAL, lexer);
         assertEquals( "\"value\"", lexer.getCodeBody() );
         assertLex(Parser.PARENCLOSE, lexer);
     	assertLex(Parser.SEMI, lexer);
@@ -658,7 +663,11 @@ public class LexerTest extends TestCase {
         
         assertLex( Parser.IDENTIFIER, "VALUE1", lexer );
         assertLex( Parser.PARENOPEN, lexer );
-        assertLex( Parser.STRING_LITERAL, "\"", lexer ); //???
+        // edit by clu on 2022-4-23 12:49:01
+        // qdox not support EnumConstant with complex arguments, such as a lambda expression with type cast
+        assertLex( Parser.CODEBLOCK, lexer);
+        assertEquals("\"hello\", 1, new String[]{\"hello\", \"world\"}", lexer.getCodeBody());
+        /*assertLex( Parser.STRING_LITERAL, "\"", lexer ); //???
         assertLex( Parser.COMMA, lexer );
         assertLex( Parser.INTEGER_LITERAL, "1", lexer );
         assertLex( Parser.COMMA, lexer );
@@ -666,7 +675,7 @@ public class LexerTest extends TestCase {
         assertLex( Parser.IDENTIFIER, "String", lexer );
         assertLex( Parser.SQUAREOPEN, lexer );
         assertLex( Parser.SQUARECLOSE, lexer );
-        assertLex( Parser.CODEBLOCK, lexer );
+        assertLex( Parser.CODEBLOCK, lexer );*/
         assertLex( Parser.PARENCLOSE, lexer );
         assertLex( Parser.SEMI, lexer );
         

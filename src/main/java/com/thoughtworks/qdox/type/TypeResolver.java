@@ -1,14 +1,11 @@
 package com.thoughtworks.qdox.type;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import com.thoughtworks.qdox.library.ClassLibrary;
 import com.thoughtworks.qdox.model.JavaClass;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * A per JavaClass resolver of types
@@ -79,7 +76,11 @@ public class TypeResolver
     
     public JavaClass resolveJavaClass( String typeName )
     {
-        return classLibrary.getJavaClass( resolveType( typeName ) );
+        String name = resolveType(typeName);
+        if (name == null) {
+            return null;
+        }
+        return classLibrary.getJavaClass(name);
     }
 
     public JavaClass getJavaClass( String binaryName )
@@ -87,6 +88,7 @@ public class TypeResolver
         return classLibrary.getJavaClass( binaryName );
     }
 
+    @Nullable
     public String resolveType( String typeName )
     {
         String result = resolvedTypeCache.get( typeName );
@@ -143,7 +145,7 @@ public class TypeResolver
      * @param typeName the name to resolve
      * @return the resolved type name, otherwise <code>null</code>
      */
-    private String resolveTypeInternal( String typeName )
+    private String resolveTypeInternal(@Nonnull String typeName )
     {
         String resolvedName = null;
 
