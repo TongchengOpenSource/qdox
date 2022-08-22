@@ -145,4 +145,22 @@ public class RecordsTest
             + "record Line(int lenght) { }";
         builder.addSource( new StringReader(source) );
     }
+
+    @Test
+    public void recordAsTypeAndIdentifiers() {
+        String source = "package record.record.record;\n"
+            + "\n"
+            + "public class record\n"
+            + "{\n"
+            + "    private Object record;\n"
+            + "    \n"
+            + "    public record() {\n"
+            + "    }\n"
+            + "    \n"
+            + "    private Object record(Object record) {\n"
+            + "        return record;\n"
+            + "    }\n"
+            + "}";
+        builder.addSource( new StringReader(source) );
+    }
 }
