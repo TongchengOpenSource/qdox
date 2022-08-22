@@ -138,4 +138,11 @@ public class RecordsTest
             + "    @GreaterThanZero double width) { }";
         builder.addSource( new StringReader(source) );
     }
+
+    @Test
+    public void withAnnotation() {
+        String source = "@Deprecated\n"
+            + "record Line(int lenght) { }";
+        builder.addSource( new StringReader(source) );
+    }
 }
