@@ -10,9 +10,9 @@ public class PermitsTest {
 
     @Test
     public void permitsAsTypeAndIdentifiers() {
-        String source = "package permits.permits.permits;\n"
+        String source = "package permits.permits.permit;\n"
                 + "\n"
-                + "public class permits\n"
+                + "public class permit\n"
                 + "{\n"
                 + "    private Object permits;\n"
                 + "    \n"
