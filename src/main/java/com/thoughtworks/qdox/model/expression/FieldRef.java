@@ -3,6 +3,7 @@ package com.thoughtworks.qdox.model.expression;
 import com.thoughtworks.qdox.library.ClassLibrary;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaField;
+import com.thoughtworks.qdox.model.JavaType;
 import com.thoughtworks.qdox.type.TypeResolver;
 
 import java.util.List;
@@ -212,6 +213,21 @@ public class FieldRef
                 ClassLibrary classLibrary = getClassLibrary();
                 if ( classLibrary != null && declaringClass != null)
                 {
+                    //  Constants are defined in the parent class or interface
+                    List<JavaClass> interfacesOrSupperClass = declaringClass.getInterfaces();
+                    JavaType superClass = declaringClass.getSuperClass();
+                    if (superClass instanceof JavaClass){
+                        interfacesOrSupperClass.add((JavaClass) superClass);
+                    }
+                    for ( JavaClass javaClass : interfacesOrSupperClass) {
+                        JavaField tmpField = javaClass.getFieldByName( getName() );
+                        if ( tmpField != null && tmpField.isStatic()) {
+                            field = tmpField;
+                           return field;
+                        }
+                    }
+
+                    // Constants are "import static"
                     List<String> imports = declaringClass.getSource().getImports();
                     for ( String i : imports )
                     {
@@ -222,7 +238,8 @@ public class FieldRef
                             {
                                 String className =  i.substring( 7, i.lastIndexOf( '.' ) ).trim();
                                 JavaClass javaClass = classLibrary.getJavaClass( className );
-                                JavaField tmpField = javaClass.getFieldByName( member );
+                                String fieldName = "*".equals(member) ? getName() : member;
+                                JavaField tmpField = javaClass.getFieldByName( fieldName );
                                 if ( tmpField != null && ( javaClass.isInterface() || tmpField.isStatic() ) )
                                 {
                                     field = tmpField;
