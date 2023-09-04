@@ -747,6 +747,16 @@ public class DefaultJavaType implements JavaClass, JavaType, Serializable {
         return resolveRealClass().getFields();
     }
 
+    @Override
+    public List<JavaField> getFields(boolean publicOnly, boolean supperClass) {
+        return resolveRealClass().getFields(publicOnly, supperClass);
+    }
+
+    @Override
+    public JavaField getFieldByName(String name, boolean publicOnly, boolean supperClass) {
+        return resolveRealClass().getFieldByName(name, publicOnly, supperClass);
+    }
+
     /** {@inheritDoc} */
     public JavaField getFieldByName( String name )
     {
