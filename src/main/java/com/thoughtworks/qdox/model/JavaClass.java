@@ -229,7 +229,13 @@ public interface JavaClass extends JavaModel, JavaType, JavaAnnotatedElement, Ja
      * @return the field
      */
     JavaField getFieldByName( String name );
-    
+
+
+    List<JavaField> getFields( boolean publicOnly, boolean supperClass );
+
+    JavaField getFieldByName( String name, boolean publicOnly, boolean supperClass );
+
+
     /**
      * Based on {@link java.lang.Class#getEnumConstants()}.
      *  

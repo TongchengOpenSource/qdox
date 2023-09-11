@@ -194,4 +194,19 @@ public class DefaultJavaField
         }
         return hashCode;
     }
+
+    @Override
+    public boolean isStatic() {
+        return (getDeclaringClass() != null && getDeclaringClass().isInterface()) || super.isStatic();
+    }
+
+    @Override
+    public boolean isFinal() {
+        return (getDeclaringClass() != null && getDeclaringClass().isInterface()) || super.isFinal();
+    }
+
+    @Override
+    public boolean isPublic() {
+        return (getDeclaringClass() != null && getDeclaringClass().isInterface()) || super.isPublic();
+    }
 }

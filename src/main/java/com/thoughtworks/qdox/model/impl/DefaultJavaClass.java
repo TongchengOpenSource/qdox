@@ -19,13 +19,7 @@ package com.thoughtworks.qdox.model.impl;
  * under the License.
  */
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.thoughtworks.qdox.library.ClassLibrary;
 import com.thoughtworks.qdox.model.BeanProperty;
@@ -568,6 +562,67 @@ public class DefaultJavaClass
         return null;
     }
 
+
+    private List<JavaField> getDeclaredFields(boolean publicOnly) {
+        List<JavaField> javaFields = new ArrayList<>(fields.size());
+        for (JavaField field : fields) {
+            if (field != null && (!publicOnly || field.isPublic())) {
+                javaFields.add(field);
+            }
+        }
+        return javaFields;
+    }
+
+    @Override
+    public List<JavaField> getFields(boolean publicOnly, boolean supperClass) {
+        List<JavaField> javaFields = getDeclaredFields(publicOnly);
+
+        if (!supperClass) {
+            return javaFields;
+        }
+        // find in interfaces
+        List<JavaClass> interfaces = getInterfaces();
+        for (JavaClass javaClass : interfaces) {
+            javaFields.addAll(javaClass.getFields(publicOnly, true));
+        }
+        // find in superJavaClass
+        JavaClass superJavaClass = getSuperJavaClass();
+        if (superJavaClass != null) {
+            javaFields.addAll(superJavaClass.getFields(publicOnly, true));
+        }
+        return javaFields;
+    }
+
+    @Override
+    public JavaField getFieldByName(String name, boolean publicOnly, boolean supperClass) {
+        if (name == null){
+            return null;
+        }
+
+        List<JavaField> fieldList = getDeclaredFields(publicOnly);
+        for (JavaField javaField : fieldList) {
+            if ( name.equals( javaField.getName() )){
+                return javaField;
+            }
+        }
+        if (!supperClass){
+            return null;
+        }
+        // find in interfaces
+        List<JavaClass> interfaces = getInterfaces();
+        for (JavaClass javaClass : interfaces) {
+            JavaField javaField = javaClass.getFieldByName(name, publicOnly, true);
+            if ( javaField != null) {
+                return javaField;
+            }
+        }
+        // find in superJavaClass
+        JavaClass superJavaClass = getSuperJavaClass();
+        if ( superJavaClass != null) {
+            return superJavaClass.getFieldByName(name, publicOnly,true);
+        }
+        return null;
+    }
     /** {@inheritDoc} */
     public List<JavaField> getEnumConstants()
     {

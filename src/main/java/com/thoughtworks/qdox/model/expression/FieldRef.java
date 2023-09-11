@@ -166,7 +166,7 @@ public class FieldRef
 
         for ( int i = start; i < end; ++i )
         {
-            field = javaClass.getFieldByName( getNamePart( i ) );
+            field = javaClass.getFieldByName( getNamePart( i ), true, true );
 
             if ( field != null )
             {
@@ -213,20 +213,6 @@ public class FieldRef
                 ClassLibrary classLibrary = getClassLibrary();
                 if ( classLibrary != null && declaringClass != null)
                 {
-                    //  Constants are defined in the parent class or interface
-                    List<JavaClass> interfacesOrSupperClass = declaringClass.getInterfaces();
-                    JavaType superClass = declaringClass.getSuperClass();
-                    if (superClass instanceof JavaClass){
-                        interfacesOrSupperClass.add((JavaClass) superClass);
-                    }
-                    for ( JavaClass javaClass : interfacesOrSupperClass) {
-                        JavaField tmpField = javaClass.getFieldByName( getName() );
-                        if ( tmpField != null && tmpField.isStatic()) {
-                            field = tmpField;
-                           return field;
-                        }
-                    }
-
                     // Constants are "import static"
                     List<String> imports = declaringClass.getSource().getImports();
                     for ( String i : imports )
@@ -239,7 +225,7 @@ public class FieldRef
                                 String className =  i.substring( 7, i.lastIndexOf( '.' ) ).trim();
                                 JavaClass javaClass = classLibrary.getJavaClass( className );
                                 String fieldName = "*".equals(member) ? getName() : member;
-                                JavaField tmpField = javaClass.getFieldByName( fieldName );
+                                JavaField tmpField = javaClass.getFieldByName( fieldName,true, true);
                                 if ( tmpField != null && ( javaClass.isInterface() || tmpField.isStatic() ) )
                                 {
                                     field = tmpField;
