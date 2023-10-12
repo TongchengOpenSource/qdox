@@ -29,9 +29,9 @@
     
     <dependencies>
         <dependency>
-            <groupId>com.github.shalousun</groupId>
+            <groupId>com.ly.smart-doc</groupId>
             <artifactId>qdox</artifactId>
-            <version>@project.version@</version>
+            <version>2.0.3.3</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
