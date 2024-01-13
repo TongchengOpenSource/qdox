@@ -278,7 +278,7 @@ public class DefaultJavaClass
 
     /** {@inheritDoc} */
     @Override
-	public JavaSource getSource()
+    public JavaSource getSource()
     {
         return getParentSource();
     }
@@ -642,9 +642,10 @@ public class DefaultJavaClass
         List<JavaField> result = isEnum() ? new LinkedList<JavaField>() : null;
         if ( isEnum() )
         {
-            for ( JavaField field : getFields() )
+            List<JavaField> javaFields = getFields();
+            for ( JavaField field : javaFields)
             {
-                if ( field.isEnumConstant() )
+                if (Objects.nonNull(field) && field.isEnumConstant() )
                 {
                     result.add( field );
                 }
@@ -841,7 +842,7 @@ public class DefaultJavaClass
 
     /** {@inheritDoc} */
     @Override
-	public List<DocletTag> getTagsByName( String name, boolean superclasses )
+    public List<DocletTag> getTagsByName( String name, boolean superclasses )
     {
         return getTagsRecursive( this, name, superclasses );
     }
