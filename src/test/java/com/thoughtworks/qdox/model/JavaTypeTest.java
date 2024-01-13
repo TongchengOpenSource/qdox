@@ -1,14 +1,11 @@
 package com.thoughtworks.qdox.model;
 
-import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-
-import org.junit.Test;
-
 import com.thoughtworks.qdox.library.ClassLibrary;
 import com.thoughtworks.qdox.library.OrderedClassLibraryBuilder;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public abstract class JavaTypeTest<T extends JavaType>
 {
@@ -24,76 +21,76 @@ public abstract class JavaTypeTest<T extends JavaType>
     @Test
     public void testToString()
     {
-        assertEquals( "int", newType( "int" ).toString() );
-        assertEquals( "int[]", newType( "int", 1 ).toString() );
-        assertEquals( "long[][][]", newType( "long", 3 ).toString() );
+        Assertions.assertEquals("int", newType( "int" ).toString());
+        Assertions.assertEquals("int[]", newType( "int", 1 ).toString());
+        Assertions.assertEquals("long[][][]", newType( "long", 3 ).toString());
     }
 
     @Test
     public void testFullyQualifiedName()
     {
-        assertEquals( "int", newType( "int" ).getFullyQualifiedName() );
-        assertEquals( "int[]", newType( "int", 1 ).getFullyQualifiedName() );
-        assertEquals( "long[][][]", newType( "long", 3 ).getFullyQualifiedName() );
+        Assertions.assertEquals("int", newType( "int" ).getFullyQualifiedName());
+        Assertions.assertEquals("int[]", newType( "int", 1 ).getFullyQualifiedName());
+        Assertions.assertEquals("long[][][]", newType( "long", 3 ).getFullyQualifiedName());
     }
 
     @Test
     public void testEquals()
     {
         JavaClass javaSource = newJavaClass( new OrderedClassLibraryBuilder().appendDefaultClassLoaders().getClassLibrary() );
-        assertEquals( newType( "long", 0, javaSource ), newType( "long", 0, javaSource ) );
-        assertThat( newType( "long", 0, javaSource ), not( newType( "int" ) ) );
-        assertThat( newType( "long", 1 ), not( newType( "long" ) ) );
-        assertThat( newType( "long" ), not( newType( "long", 2 ) ) );
-        assertFalse( newType( "int" ).equals( null ) );
+        assertThat(newType( "long", 0, javaSource )).isEqualTo( newType( "long", 0, javaSource ) );
+        assertThat(newType( "long", 0, javaSource )).isNotEqualTo( newType( "int" ) );
+        assertThat(newType( "long", 1 )).isNotEqualTo(newType( "long" ));
+        assertThat(newType( "long" )).isNotEqualTo(newType( "long", 2 ));
+        assertThat(newType( "int" )).isNotEqualTo(null);
     }
 
     @Test
     public void testToStringVoid()
     {
-        assertEquals( "void", newType("void").toString() );
+        Assertions.assertEquals("void", newType("void").toString());
     }
 
     @Test
     public void testToStringBoolean()
     {
-        assertEquals( "boolean", newType( "boolean" ).toString() );
+        Assertions.assertEquals("boolean", newType( "boolean" ).toString());
     }
 
     @Test
     public void testToStringInt()
     {
-        assertEquals( "int", newType( "int" ).toString() );
+        Assertions.assertEquals("int", newType( "int" ).toString());
     }
 
     @Test
     public void testToStringLong()
     {
-        assertEquals( "long", newType( "long" ).toString() );
+        Assertions.assertEquals("long", newType( "long" ).toString());
     }
 
     @Test
     public void testToStringFloat()
     {
-        assertEquals( "float", newType( "float" ).toString() );
+        Assertions.assertEquals("float", newType( "float" ).toString());
     }
 
     @Test
     public void testToStringDouble()
     {
-        assertEquals( "double", newType( "double" ).toString() );
+        Assertions.assertEquals("double", newType( "double" ).toString());
     }
 
     @Test
     public void testToStringChar()
     {
-        assertEquals( "char", newType( "char" ).toString() );
+        Assertions.assertEquals("char", newType( "char" ).toString());
     }
 
     @Test
     public void testToStringByte()
     {
-        assertEquals( "byte", newType( "byte" ).toString() );
+        Assertions.assertEquals("byte", newType( "byte" ).toString());
     }
 
 }

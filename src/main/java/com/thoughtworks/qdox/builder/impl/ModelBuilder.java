@@ -19,24 +19,68 @@ package com.thoughtworks.qdox.builder.impl;
  * under the License.
  */
 
-import com.thoughtworks.qdox.builder.Builder;
-import com.thoughtworks.qdox.builder.TypeAssembler;
-import com.thoughtworks.qdox.library.ClassLibrary;
-import com.thoughtworks.qdox.model.*;
-import com.thoughtworks.qdox.model.expression.Expression;
-import com.thoughtworks.qdox.model.impl.*;
-import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.*;
-import com.thoughtworks.qdox.parser.expression.ExpressionDef;
-import com.thoughtworks.qdox.parser.structs.*;
-import com.thoughtworks.qdox.parser.structs.ModuleDef.*;
-import com.thoughtworks.qdox.type.TypeResolver;
-import com.thoughtworks.qdox.writer.ModelWriterFactory;
-
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import com.thoughtworks.qdox.builder.Builder;
+import com.thoughtworks.qdox.builder.TypeAssembler;
+import com.thoughtworks.qdox.library.ClassLibrary;
+import com.thoughtworks.qdox.model.DocletTag;
+import com.thoughtworks.qdox.model.DocletTagFactory;
+import com.thoughtworks.qdox.model.JavaAnnotatedElement;
+import com.thoughtworks.qdox.model.JavaAnnotation;
+import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaConstructor;
+import com.thoughtworks.qdox.model.JavaExecutable;
+import com.thoughtworks.qdox.model.JavaGenericDeclaration;
+import com.thoughtworks.qdox.model.JavaMethod;
+import com.thoughtworks.qdox.model.JavaModule;
+import com.thoughtworks.qdox.model.JavaParameter;
+import com.thoughtworks.qdox.model.JavaSource;
+import com.thoughtworks.qdox.model.JavaType;
+import com.thoughtworks.qdox.model.JavaTypeVariable;
+import com.thoughtworks.qdox.model.expression.Expression;
+import com.thoughtworks.qdox.model.impl.AbstractBaseJavaEntity;
+import com.thoughtworks.qdox.model.impl.DefaultJavaClass;
+import com.thoughtworks.qdox.model.impl.DefaultJavaConstructor;
+import com.thoughtworks.qdox.model.impl.DefaultJavaField;
+import com.thoughtworks.qdox.model.impl.DefaultJavaInitializer;
+import com.thoughtworks.qdox.model.impl.DefaultJavaMethod;
+import com.thoughtworks.qdox.model.impl.DefaultJavaModule;
+import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor;
+import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.DefaultJavaExports;
+import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.DefaultJavaOpens;
+import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.DefaultJavaProvides;
+import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.DefaultJavaRequires;
+import com.thoughtworks.qdox.model.impl.DefaultJavaModuleDescriptor.DefaultJavaUses;
+import com.thoughtworks.qdox.model.impl.DefaultJavaPackage;
+import com.thoughtworks.qdox.model.impl.DefaultJavaParameter;
+import com.thoughtworks.qdox.model.impl.DefaultJavaSource;
+import com.thoughtworks.qdox.model.impl.DefaultJavaType;
+import com.thoughtworks.qdox.model.impl.DefaultJavaTypeVariable;
+import com.thoughtworks.qdox.parser.expression.ExpressionDef;
+import com.thoughtworks.qdox.parser.structs.AnnoDef;
+import com.thoughtworks.qdox.parser.structs.ClassDef;
+import com.thoughtworks.qdox.parser.structs.CompactConstructorDef;
+import com.thoughtworks.qdox.parser.structs.FieldDef;
+import com.thoughtworks.qdox.parser.structs.InitDef;
+import com.thoughtworks.qdox.parser.structs.MethodDef;
+import com.thoughtworks.qdox.parser.structs.ModuleDef;
+import com.thoughtworks.qdox.parser.structs.ModuleDef.ExportsDef;
+import com.thoughtworks.qdox.parser.structs.ModuleDef.OpensDef;
+import com.thoughtworks.qdox.parser.structs.ModuleDef.ProvidesDef;
+import com.thoughtworks.qdox.parser.structs.ModuleDef.RequiresDef;
+import com.thoughtworks.qdox.parser.structs.ModuleDef.UsesDef;
+import com.thoughtworks.qdox.parser.structs.PackageDef;
+import com.thoughtworks.qdox.parser.structs.RecordFieldsDef;
+import com.thoughtworks.qdox.parser.structs.TagDef;
+import com.thoughtworks.qdox.parser.structs.TypeDef;
+import com.thoughtworks.qdox.parser.structs.TypeVariableDef;
+import com.thoughtworks.qdox.type.TypeResolver;
+import com.thoughtworks.qdox.writer.ModelWriterFactory;
 
 /**
  * @author <a href="mailto:joew@thoughtworks.com">Joe Walnes</a>
@@ -51,6 +95,8 @@ public class ModelBuilder implements Builder {
     private DefaultJavaModuleDescriptor moduleDescriptor;
 
     private LinkedList<DefaultJavaClass> classStack = new LinkedList<DefaultJavaClass>();
+
+    private LinkedList<DefaultJavaConstructor> recordHeaderStack = new LinkedList<DefaultJavaConstructor>();
 
     private List<DefaultJavaParameter> parameterList = new LinkedList<DefaultJavaParameter>();
 
@@ -184,6 +230,16 @@ public class ModelBuilder implements Builder {
         source.addImport( importName );
     }
 
+    public void addImplements( Set<TypeDef> implementSet )
+    {
+        List<JavaClass> implementz = new LinkedList<JavaClass>();
+        for ( TypeDef implementType : implementSet )
+        {
+            implementz.add( createType( implementType, 0 ) );
+        }
+        classStack.getFirst().setImplementz( implementz );
+    }
+
     /** {@inheritDoc} */
     public void addJavaDoc( String text )
     {
@@ -207,6 +263,7 @@ public class ModelBuilder implements Builder {
         newClass.setName( def.getName() );
         newClass.setInterface( ClassDef.INTERFACE.equals( def.getType() ) );
         newClass.setEnum( ClassDef.ENUM.equals( def.getType() ) );
+        newClass.setRecord( ClassDef.RECORD.equals( def.getType() ) );
         newClass.setAnnotation( ClassDef.ANNOTATION_TYPE.equals( def.getType() ) );
 
         // superclass
@@ -283,6 +340,48 @@ public class ModelBuilder implements Builder {
         classStack.removeFirst();
     }
 
+    /** {@inheritDoc} */
+    public void endRecord( RecordFieldsDef def )
+    {
+        DefaultJavaClass cls = classStack.getFirst();
+        for ( FieldDef param : def.getFields() )
+        {
+            int dimensions =
+                param.isVarArgs()
+                ? param.getDimensions() + 1
+                : param.getDimensions();
+
+            FieldDef field = new FieldDef();
+            field.setName(param.getName());
+            field.setType(param.getType());
+            field.setDimensions(dimensions);
+            field.setEnumConstant(false);
+            field.getModifiers().addAll(param.getModifiers());
+            field.getModifiers().add("private");
+            field.getModifiers().add("final");
+            field.setLineNumber(param.getLineNumber());
+            beginField(field);
+            endField();
+
+            if( cls.getMethod( param.getName(), new LinkedList(), false ) == null )
+            {
+                MethodDef mth = new MethodDef();
+                mth.setName(param.getName());
+                mth.setLineNumber(param.getLineNumber());
+                mth.setReturnType(param.getType());
+                mth.getModifiers().add("public");
+                mth.setDimensions(dimensions);
+                mth.setTypeParams(new LinkedList());
+                mth.setLineNumber(param.getLineNumber());
+                beginMethod();
+                endMethod(mth);
+            }
+        }
+
+        recordHeaderStack.removeFirst();
+        classStack.removeFirst();
+    }
+
     /**
      * this one is specific for those cases where dimensions can be part of both the type and identifier
      * i.e. private String[] matrix[]; //field
@@ -351,7 +450,14 @@ public class ModelBuilder implements Builder {
         addJavaDoc( currentConstructor );
         setAnnotations( currentConstructor );
 
-        classStack.getFirst().addConstructor( currentConstructor );
+        DefaultJavaClass cls = classStack.getFirst();
+
+        if( cls.isRecord() && cls.getConstructors().isEmpty() )
+        {
+            recordHeaderStack.addFirst( currentConstructor );
+        }
+
+        cls.addConstructor( currentConstructor );
     }
 
     /** {@inheritDoc} */
@@ -392,6 +498,15 @@ public class ModelBuilder implements Builder {
         }
 
         currentConstructor.setSourceCode( def.getBody() );
+    }
+
+    /** {@inheritDoc} */
+    public void addCompactConstructor( CompactConstructorDef def )
+    {
+        DefaultJavaConstructor javaConstructor = recordHeaderStack.getFirst();
+        javaConstructor.setModifiers( new LinkedList<String>( def.getModifiers() ) );
+        javaConstructor.setSourceCode( def.getBody() );
+        javaConstructor.setLineNumber( def.getLineNumber() );
     }
 
     /** {@inheritDoc} */

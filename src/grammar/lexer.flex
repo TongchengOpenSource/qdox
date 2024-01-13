@@ -308,28 +308,19 @@ JavadocEnd                      = "*"+ "/"
         pushState(NAME);
         return Parser.ENUM;
     }
-
     "record" / {WhiteSpace}+ {Id} {
-         markAnnotatedElementLine();
-         classDepth++;
-         braceMode = CODEBLOCK;
-         pushState(NAME);
-         return Parser.RECORD;
+        markAnnotatedElementLine();
+        classDepth++;
+        braceMode = TYPE;
+        pushState(NAME);
+        return Parser.RECORD;
     }
-    "permits" / {WhiteSpace}+ {Id} {
-             markAnnotatedElementLine();
-             classDepth++;
-             braceMode = CODEBLOCK;
-             pushState(NAME);
-             return Parser.PERMITS;
-     }
     "@"                 {
         markAnnotatedElementLine();
         pushState(ATANNOTATION);
         return Parser.AT;
     }
     "{"                 {
-        // mark04
         resetAnnotatedElementLine();
         if(braceMode >= 0) {
           if(braceMode == ENUM) {
@@ -348,14 +339,14 @@ JavadocEnd                      = "*"+ "/"
           {
             braceMode = TYPE;
           }
-          else
+          else 
           {
             braceMode = CODEBLOCK;
           }
           return Parser.BRACEOPEN;
         }
     }
-    "}"  {
+    "}"  { 
         nestingDepth--;
         classDepth--;
         popState();
@@ -367,7 +358,7 @@ JavadocEnd                      = "*"+ "/"
         {
           braceMode = CODEBLOCK;
         }
-        return Parser.BRACECLOSE;
+        return Parser.BRACECLOSE; 
     }
 
     "/**" ~"*/" {
@@ -376,7 +367,7 @@ JavadocEnd                      = "*"+ "/"
       }
     }
 
-    "=" {WhiteSpace}* {
+    "=" {WhiteSpace}* { 
         assignmentDepth = nestingDepth;
         getCodeBody(); /* reset codebody */
         appendingToCodeBody = true;
@@ -395,7 +386,6 @@ JavadocEnd                      = "*"+ "/"
     ";"  {  resetAnnotatedElementLine();
             return Parser.SEMI; }
     "("  {
-            // mark01
             nestingDepth++;
             if( parenMode >= 0 ) {
               annotationDepth = nestingDepth;
@@ -407,12 +397,12 @@ JavadocEnd                      = "*"+ "/"
 }
 <MODULE> {
 	"{"                 { return Parser.BRACEOPEN; }
-    "}"                 { popState();
+    "}"                 { popState(); 
                           return Parser.BRACECLOSE; }
 
     ","                 { pushState(NAME); return Parser.COMMA; }
 	";"                 { return Parser.SEMI; }
-
+	
     "exports"           { pushState(NAME); return Parser.EXPORTS; }
     "opens"             { pushState(NAME); return Parser.OPENS; }
     "provides"          { pushState(NAME); return Parser.PROVIDES; }
@@ -422,13 +412,12 @@ JavadocEnd                      = "*"+ "/"
     "with"              { pushState(NAME); return Parser.WITH; }
 }
 <ENUM> {
-    ";"  {
-    		enumConstantMode = false;
-    		braceMode = CODEBLOCK;
+    ";"  { 
+    		enumConstantMode = false; 
+    		braceMode = CODEBLOCK; 
     		return Parser.SEMI;
     	 }
     "("  {
-            // mark02
             nestingDepth++;
             if(parenMode >= 0) {
               annotationDepth = nestingDepth;
@@ -436,8 +425,8 @@ JavadocEnd                      = "*"+ "/"
               parenMode = -1;
               return Parser.PARENOPEN;
             }
-            else if(enumConstantMode)
-            {
+            else if(enumConstantMode) 
+            {  
               annotationDepth = nestingDepth;
               enumConstDepth = 1;
               // reuse codeblock state
@@ -451,7 +440,6 @@ JavadocEnd                      = "*"+ "/"
             }
          }
 }
-
 <ENUM, TYPE> {
     "default"           { return Parser.DEFAULT; }
 }
@@ -463,15 +451,15 @@ JavadocEnd                      = "*"+ "/"
     {Id} / {WhiteSpace}* [;{(] { resetAnnotatedElementLine(); popState(); return Parser.IDENTIFIER; }
     {Id}                       { popState(); return Parser.IDENTIFIER; }
 }
-<YYINITIAL, ANNOTATIONNOARG, ANNOTATIONTYPE, ENUM, MODULE, TYPE> {
+<YYINITIAL, ANNOTATIONNOARG, ANNOTATIONTYPE, ENUM, MODULE, RECORD, TYPE> {
     {Id} { return Parser.IDENTIFIER;
          }
 }
 <CODEBLOCK> {
-     "{"  {
+     "{"  { 
             if(codeblockDepth++ > 0 ) {
-                codeBody.append('{');
-            }
+            codeBody.append('{');
+            }  
           }
      "}"                 {
         if (--codeblockDepth == 0) {
@@ -594,9 +582,9 @@ JavadocEnd                      = "*"+ "/"
 	{IntegerLiteral}	{ return Parser.INTEGER_LITERAL; }
 	{FloatingPointLiteral} { return Parser.FLOAT_LITERAL; }
 	"true" | "false"	{ return Parser.BOOLEAN_LITERAL; }
-
+	
 	"class"				{ return Parser.CLASS; }
-
+	
 	"new"               { return Parser.NEW; }
 
 	{Id}                { return Parser.IDENTIFIER; }
@@ -617,8 +605,8 @@ JavadocEnd                      = "*"+ "/"
 }
 
 <PARENBLOCK> {
-    "("             {
-        nestingDepth++;
+    "("             { 
+        nestingDepth++; 
         if (appendingToCodeBody) { codeBody.append("("); }
     }
     ")"             {
@@ -631,13 +619,13 @@ JavadocEnd                      = "*"+ "/"
 }
 
 <ASSIGNMENT> {
-    ";"                 {
+    ";"                 { 
         resetAnnotatedElementLine();
         if (nestingDepth == assignmentDepth) {
             appendingToCodeBody = true;
             newMode = false;
-            popState();
-            return Parser.SEMI;
+            popState(); 
+            return Parser.SEMI; 
         } else {
             codeBody.append(';');
         }
@@ -645,8 +633,8 @@ JavadocEnd                      = "*"+ "/"
     ","                 {
         if (nestingDepth == assignmentDepth) {
             appendingToCodeBody = true;
-            popState();
-            return Parser.COMMA;
+            popState(); 
+            return Parser.COMMA; 
         } else {
             codeBody.append(',');
         }
@@ -659,23 +647,23 @@ JavadocEnd                      = "*"+ "/"
     "}"                 {
 		codeBody.append('}');
         nestingDepth--;
-    	if (nestingDepth==assignmentDepth) {
+    	if (nestingDepth==assignmentDepth) { 
             anonymousMode=false;
         }
     }
 
-    "("                 {
-        codeBody.append('(');
-        parenDepth = nestingDepth++;
-        pushState(PARENBLOCK);
+    "("                 { 
+        codeBody.append('('); 
+        parenDepth = nestingDepth++; 
+        pushState(PARENBLOCK); 
     }
     ")"                 {
         codeBody.append(')');
-        nestingDepth--;
+        nestingDepth--; 
         if (nestingDepth < assignmentDepth) {
-            appendingToCodeBody = true;
-            popState();
-            return Parser.PARENCLOSE;
+            appendingToCodeBody = true; 
+            popState(); 
+            return Parser.PARENCLOSE; 
         }
     }
     "["                 { codeBody.append('['); bracketMode = true; nestingDepth++; }
@@ -684,7 +672,7 @@ JavadocEnd                      = "*"+ "/"
         codeBody.append("new");
         if (nestingDepth==assignmentDepth) {
             newMode=true;
-        }
+        } 
     }
     "." [ \t\r\n]* / "<" {
       codeBody.append('.');
@@ -693,7 +681,7 @@ JavadocEnd                      = "*"+ "/"
     "<"                 {
         codeBody.append('<');
         if (!bracketMode && newMode && !anonymousMode) {
-            nestingDepth++;
+            nestingDepth++; 
         }
     }
     ">"                 {
@@ -701,7 +689,7 @@ JavadocEnd                      = "*"+ "/"
         if (!anonymousMode) {
 	        if (!bracketMode && newMode) {
     	        nestingDepth--;
-    	    	if (nestingDepth==assignmentDepth) {
+    	    	if (nestingDepth==assignmentDepth) { 
     	            newMode=false;
     	        }
         	}
@@ -720,7 +708,7 @@ JavadocEnd                      = "*"+ "/"
   "/**/"              { if (appendingToCodeBody) { codeBody.append("/**/"); } }
 }
 
-<CODEBLOCK, ASSIGNMENT> {
+<CODEBLOCK, ASSIGNMENT> { 
     .|{WhiteSpace}	    { codeBody.append(yytext()); }
 }
 

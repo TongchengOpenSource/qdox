@@ -19,13 +19,24 @@ package com.thoughtworks.qdox.builder;
  * under the License.
  */
 
+import java.net.URL;
+import java.util.Set;
+
 import com.thoughtworks.qdox.model.JavaModule;
 import com.thoughtworks.qdox.model.JavaSource;
 import com.thoughtworks.qdox.parser.expression.ExpressionDef;
-import com.thoughtworks.qdox.parser.structs.*;
+import com.thoughtworks.qdox.parser.structs.AnnoDef;
+import com.thoughtworks.qdox.parser.structs.ClassDef;
+import com.thoughtworks.qdox.parser.structs.CompactConstructorDef;
+import com.thoughtworks.qdox.parser.structs.FieldDef;
+import com.thoughtworks.qdox.parser.structs.InitDef;
+import com.thoughtworks.qdox.parser.structs.MethodDef;
+import com.thoughtworks.qdox.parser.structs.ModuleDef;
+import com.thoughtworks.qdox.parser.structs.PackageDef;
+import com.thoughtworks.qdox.parser.structs.RecordFieldsDef;
+import com.thoughtworks.qdox.parser.structs.TagDef;
+import com.thoughtworks.qdox.parser.structs.TypeDef;
 import com.thoughtworks.qdox.writer.ModelWriterFactory;
-
-import java.net.URL;
 
 public interface Builder
 {
@@ -50,11 +61,14 @@ public interface Builder
 
     void beginClass( ClassDef def );
     void endClass();
-    
+    void endRecord( RecordFieldsDef def );
+
+    void addImplements( Set<TypeDef> implementSet );
     void addInitializer( InitDef def );
 
     void beginConstructor();
     void endConstructor( MethodDef def );
+    void addCompactConstructor( CompactConstructorDef def );
 
     void beginMethod();
     void endMethod( MethodDef def );
