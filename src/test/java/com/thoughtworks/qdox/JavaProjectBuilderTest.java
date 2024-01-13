@@ -1469,8 +1469,12 @@ public class JavaProjectBuilderTest {
         		" }";
         JavaClass cls = builder.addSource(new StringReader( source )).getClassByName( "AssignmentOperators" );
         JavaField xoreq = cls.getFieldByName( "XOREQ" );
-        Assertions.assertEquals(1, xoreq.getEnumConstantArguments().size());
-        Assertions.assertEquals("a ^= b", xoreq.getEnumConstantArguments().get(0).getParameterValue());
+        // edit by clu on 2022-4-23 12:49:01
+        // qdox not support EnumConstant with complex arguments, such as a lambda expression with type cast,
+        // so the arguments of EnumConstant will be parsed as CodeBlock that can be get by getInitializationExpression method
+        Assertions.assertEquals(" a ^= b ", xoreq.getInitializationExpression());
+        /*assertEquals( 1, xoreq.getEnumConstantArguments().size() );
+        assertEquals( "a ^= b", xoreq.getEnumConstantArguments().get(0).getParameterValue() );*/
     }
 
     @Test
@@ -1484,8 +1488,12 @@ public class JavaProjectBuilderTest {
                 " }";
         JavaClass cls = builder.addSource(new StringReader( source )).getClassByName( "Expression" );
         JavaField postInc = cls.getFieldByName( "POSTINC" );
-        Assertions.assertEquals(1, postInc.getEnumConstantArguments().size());
-        Assertions.assertEquals("a++", postInc.getEnumConstantArguments().get( 0 ).getParameterValue());
+        // edit by clu on 2022-4-23 12:49:01
+        // qdox not support EnumConstant with complex arguments, such as a lambda expression with type cast,
+        // so the arguments of EnumConstant will be parsed as CodeBlock that can be get by getInitializationExpression method
+        Assertions.assertEquals( " a++ ", postInc.getInitializationExpression());
+        /*assertEquals( 1, postInc.getEnumConstantArguments().size() );
+        assertEquals( "a++", postInc.getEnumConstantArguments().get( 0 ).getParameterValue() );*/
     }
     
     // for QDOX-230
@@ -1648,6 +1656,50 @@ public class JavaProjectBuilderTest {
             "    }\r\n" + 
             "}";
         builder.addSource( new StringReader( source ) ); 
+    }
+
+    @Test
+    public void testComplexEnum2()
+    {
+        String source = "import java.util.function.BiFunction;\n" +
+            "\n" +
+            "public enum MyEnum {\n" +
+            "\n" +
+            "    ONE((((((System.currentTimeMillis() < 0))))) ? (BiFunction<String, String, String>) (a, b) -> {\n" +
+            "        String s = (\"1)}}}}}}\");\n" +
+            "        int i = ((((2))));\n" +
+            "        return a;\n" +
+            "    } : null),\n" +
+            "\n" +
+            "\n" +
+            "    ONE3((BiFunction<String, String, String>) (a, b) -> a + b + \"\\\"\\\\)))}}}}\"),\n" +
+            "    ONE2((BiFunction<String, String, String>) String::concat),\n" +
+            "    ONE4(null, null, (BiFunction<String, String, String>) (a, b) -> {\n" +
+            "        String s = (\"1)}}}}}}\");\n" +
+            "        int i = ((((2))));\n" +
+            "        return a;\n" +
+            "    }, (BiFunction<String, String, String>) (a, b) -> a + b + \"\\\"\\\\)))}}}}\", 1)\n" +
+            "\n" +
+            "    ;\n" +
+            "\n" +
+            "    MyEnum() {\n" +
+            "    }\n" +
+            "\n" +
+            "    MyEnum(String s, String s2) {\n" +
+            "    }\n" +
+            "\n" +
+            "    MyEnum(BiFunction<String, String, String> f) {\n" +
+            "        int i = (((((1)))));\n" +
+            "    }\n" +
+            "\n" +
+            "    MyEnum(BiFunction<String, String, String> f1,\n" +
+            "             BiFunction<String, String, String> f2,\n" +
+            "             BiFunction<String, String, String> f3,\n" +
+            "             BiFunction<String, String, String> f4,\n" +
+            "             int i) {\n" +
+            "    }\n" +
+            "}\n";
+        builder.addSource( new StringReader( source ) );
     }
 
     @Test

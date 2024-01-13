@@ -3,8 +3,6 @@ package com.thoughtworks.qdox.type;
 import com.thoughtworks.qdox.library.ClassLibrary;
 import com.thoughtworks.qdox.model.JavaClass;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -88,7 +86,6 @@ public class TypeResolver
         return classLibrary.getJavaClass( binaryName );
     }
 
-    @Nullable
     public String resolveType( String typeName )
     {
         String result = resolvedTypeCache.get( typeName );
@@ -145,7 +142,7 @@ public class TypeResolver
      * @param typeName the name to resolve
      * @return the resolved type name, otherwise <code>null</code>
      */
-    private String resolveTypeInternal(@Nonnull String typeName )
+    private String resolveTypeInternal(String typeName )
     {
         String resolvedName = null;
 

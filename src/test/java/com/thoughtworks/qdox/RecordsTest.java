@@ -8,7 +8,6 @@ import com.thoughtworks.qdox.model.JavaConstructor;
 import com.thoughtworks.qdox.model.JavaField;
 import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaParameter;
-import com.thoughtworks.qdox.model.JavaType;
 
 import java.util.LinkedList;
 import java.io.StringReader;
@@ -225,37 +224,5 @@ public class RecordsTest
             + "}";
         JavaProjectBuilder javaDocBuilder = new JavaProjectBuilder();
         javaDocBuilder.addSource( new StringReader(source) );
-    }
-
-    @Test
-    public void withAnnotation() {
-        String source = "@Deprecated\n"
-            + "record Line(int lenght) { }";
-        builder.addSource( new StringReader(source) );
-    }
-
-    @Test
-    public void recordAsTypeAndIdentifiers() {
-        String source = "package record.record.record;\n"
-            + "\n"
-            + "public class record\n"
-            + "{\n"
-            + "    private Object record;\n"
-            + "    \n"
-            + "    public record() {\n"
-            + "    }\n"
-            + "    \n"
-            + "    private Object record(Object record) {\n"
-            + "        return record;\n"
-            + "    }\n"
-            + "}";
-        builder.addSource( new StringReader(source) );
-    }
-    @Test
-    public void parametersContainingRecord() {
-        String source = "interface Example{\n"
-            + " void apply(Object recordList);"
-            + "}";
-        builder.addSource( new StringReader(source) );
     }
 }

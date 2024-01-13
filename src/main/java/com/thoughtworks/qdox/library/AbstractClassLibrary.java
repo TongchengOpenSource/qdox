@@ -31,7 +31,6 @@ import com.thoughtworks.qdox.model.impl.DefaultJavaPackage;
 import com.thoughtworks.qdox.parser.structs.ClassDef;
 import com.thoughtworks.qdox.writer.ModelWriterFactory;
 
-import javax.annotation.Nonnull;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -91,7 +90,7 @@ public abstract class AbstractClassLibrary
      * @param name the binary name of the class
      * @return the JavaClass matching the name, otherwise <code>null</code>
      */
-    public final JavaClass getJavaClass(@Nonnull String name ) {
+    public final JavaClass getJavaClass(String name ) {
        return getJavaClass( name, false ); 
     }
     

@@ -24,7 +24,6 @@ import com.thoughtworks.qdox.model.JavaModule;
 import com.thoughtworks.qdox.model.JavaPackage;
 import com.thoughtworks.qdox.model.JavaSource;
 
-import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.Collection;
 
@@ -51,7 +50,7 @@ public interface ClassLibrary
      * @param name The (binary) name of the JavaClass
      * @return the JavaClass, otherwise <code>null</code>
      */
-    JavaClass getJavaClass(@Nonnull String name );
+    JavaClass getJavaClass(String name );
 
     /**
      * Try to retrieve the JavaClass by the (binary) name.
