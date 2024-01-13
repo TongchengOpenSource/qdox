@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import java.io.StringReader;
 
 public class PermitsTest {
-    private JavaProjectBuilder builder = new JavaProjectBuilder();
 
     @Test
     public void permitsAsTypeAndIdentifiers() {
@@ -30,6 +29,7 @@ public class PermitsTest {
                 "        this.permits = permits;\n" +
                 "    }\n" +
                 "}";
-        builder.addSource( new StringReader(source) );
+        JavaProjectBuilder javaDocBuilder = new JavaProjectBuilder();
+        javaDocBuilder.addSource( new StringReader(source) );
     }
 }

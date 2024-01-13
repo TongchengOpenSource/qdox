@@ -268,7 +268,6 @@ JavadocEnd                      = "*"+ "/"
     "new"               { return Parser.NEW; }
     "sealed"            { return Parser.SEALED; }
     "non-sealed"        { return Parser.NON_SEALED; }
-    "permits"           { return Parser.PERMITS; }
 
     "["                 { nestingDepth++; return Parser.SQUAREOPEN; }
     "]"                 { nestingDepth--; return Parser.SQUARECLOSE; }
@@ -317,11 +316,11 @@ JavadocEnd                      = "*"+ "/"
         return Parser.RECORD;
     }
     "permits" / {WhiteSpace}+ {Id} {
-             markAnnotatedElementLine();
-             classDepth++;
-             braceMode = CODEBLOCK;
-             pushState(NAME);
-             return Parser.PERMITS;
+          markAnnotatedElementLine();
+          classDepth++;
+          braceMode = TYPE;
+          pushState(NAME);
+          return Parser.PERMITS;
      }
     "@"                 {
         markAnnotatedElementLine();

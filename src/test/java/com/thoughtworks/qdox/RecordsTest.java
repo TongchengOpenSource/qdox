@@ -22,7 +22,12 @@ public class RecordsTest
 
     @Test
     public void withTwoFields() {
-        String source = "record Rectangle(double length, double width) { }";
+        String source = "/**\n" +
+                " * \n" +
+                " * @param length length\n" +
+                " * @param width width\n" +
+                " */\n" +
+                "public record Rectangle(double length, double width) { }";
         JavaProjectBuilder javaDocBuilder = new JavaProjectBuilder();
         javaDocBuilder.addSource( new StringReader(source) );
 
