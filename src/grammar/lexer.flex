@@ -546,6 +546,7 @@ JavadocEnd                      = "*"+ "/"
     "++"                { return Parser.PLUSPLUS; }
     "--"                { return Parser.MINUSMINUS; }
 
+    "\"\"\""            { appendingToCodeBody=true; codeBody.append("\"\"\""); pushState(ANNOSTRING); }
 	"\""                { appendingToCodeBody=true; codeBody.append("\""); pushState(ANNOSTRING); }
     "\'"                { appendingToCodeBody=true; codeBody.append("\'"); pushState(ANNOCHAR); }
 
@@ -600,6 +601,7 @@ JavadocEnd                      = "*"+ "/"
 }
 
 <ANNOSTRING> {
+	"\"\"\""        { codeBody.append("\"\"\""); popState(); appendingToCodeBody=false; return Parser.TEXTBLOCK; }
 	"\""            { codeBody.append("\""); popState(); appendingToCodeBody=false; return Parser.STRING_LITERAL; }
 	"\\\""          { codeBody.append("\\\""); }
 	"\\\\"          { codeBody.append("\\\\"); }
